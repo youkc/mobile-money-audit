@@ -4,7 +4,7 @@
 
 ## Français
 
-Je développe des apps PHP (Laravel et PHP natif) et Flutter à Dakar. Quand j'ai intégré mes premiers paiements mobile money, j'ai cherché un outil pour relire mon code avant la mise en ligne. Il existe de bons audits PHP et Laravel, mais aucun ne connaît Wave, PayTech, Bictorys ou PayDunya, ni les pièges propres au XOF. J'ai donc écrit ce skill.
+Je développe des apps PHP (Laravel et PHP natif) et Flutter. Quand j'ai intégré mes premiers paiements mobile money, j'ai cherché un outil pour relire mon code avant la mise en ligne. Il existe de bons audits PHP et Laravel, mais aucun ne connaît Wave, PayTech, Bictorys ou PayDunya, ni les pièges propres au XOF. J'ai donc écrit ce skill.
 
 Vous le lancez depuis votre agent IA (Claude Code, Cursor, Codex...) dans votre projet. Il fonctionne avec Laravel comme avec du PHP natif (routeur maison, `curl`, scripts cron, fichiers SQL). Il lit le code qui gère vos paiements, ne modifie rien, et vous dit si vous pouvez passer en prod.
 
@@ -91,7 +91,7 @@ Licence MIT.
 
 ## English
 
-I build PHP (Laravel and plain PHP) and Flutter apps in Dakar. When I wired up my first mobile money payments, I looked for something to review that code before going live. There are good PHP and Laravel audits out there, but none of them know Wave, PayTech, Bictorys or PayDunya, or the traps that come with XOF. So I wrote this skill.
+I build PHP (Laravel and plain PHP) and Flutter apps. When I wired up my first mobile money payments, I looked for something to review that code before going live. There are good PHP and Laravel audits out there, but none of them know Wave, PayTech, Bictorys or PayDunya, or the traps that come with XOF. So I wrote this skill.
 
 You run it from your AI agent (Claude Code, Cursor, Codex...) inside your project. It works with Laravel and with plain PHP (custom router, `curl`, cron scripts, SQL files). It reads the code that handles your payments, changes nothing, and tells you whether you're ready for production.
 
