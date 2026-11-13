@@ -1,0 +1,24 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Test Mobile Money
+Les tests de paiement Mobile Money en environnement sandbox reposent sur notre simulateur de Mobile Money.\
+Aucune transaction réelle n’est effectuée.
+Procédure de test
+Initiez un paiement Mobile Money en sandbox.
+Un QR code s’affiche à l’écran.
+Scannez ce QR code avec la caméra du téléphone uniquement.
+⚠️ Important
+N’utilisez en aucun cas une application Mobile Money réelle (Wave, Orange Money, MTN, etc.).
+Les applications réelles ne fonctionneront pas avec le simulateur sandbox.
+> ❗️ Important
+>
+> Limitations en Sandbox
+>
+> L’URL de redirection (success / error) n’est pas appelée lors des paiements Mobile Money en sandbox.
+>
+> Si vous souhaitez tester le comportement de la redirection, veuillez utiliser le paiement par carte bancaire.
+>
+> 👉 Ces limitations s’appliquent uniquement à l’environnement sandbox.\
+> En environnement production, les paiements Mobile Money et les redirections fonctionnent normalement.

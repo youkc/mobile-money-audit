@@ -1,0 +1,52 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Réponses de statut et leurs significations
+Ce document explique les statuts de réponse du payload renvoyés par nos points d'accès. Ils sont couramment observés lors de la consommation du point d'accès aux paiements mobiles et par carte. Veuillez noter que cela s'applique partout et en toute circonstance.
+Veuillez trouver ci-dessous les statuts et descriptions.
+# Liste des descriptions de statuts (Général)
+| Statut | Signification | Action recommandée |
+| -------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| **en attente** | La transaction est en cours et en attente d'autorisation de l'utilisateur | Vous pouvez reconsulter le point d'accès associé pour vérifier s'il y a eu un changement de statut. |
+| **échoué** | La transaction a échoué et n'a pas été traitée | Marquez la transaction comme échouée de votre côté |
+| **succès** | La transaction a été traitée avec succès | Marquez la transaction comme réussie |
+> 📘 Note
+>
+> Une transaction est automatiquement considérée comme "expirée" si elle est en attente depuis plus de deux heures.
+# Liste des descriptions de statuts (Paiement)
+| Statut | Signification | Action Recommandée |
+| -------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| **initié** | La charge a été créée | Affichez la page de paiement générée pour compléter le paiement |
+| **en attente** | La charge est en cours et en attente d'autorisation de l'utilisateur | Appelez l'API d'autorisation de la charge pour autoriser le paiement |
+| **succès** | La charge a été traitée avec succès | Marquez le paiement comme réussi |
+| **échoué** | La charge a échoué et n'a pas été traitée | Marquez le paiement comme échoué |
+| **expiré** | La charge n'a pas été complétée par l'utilisateur | Marquez le paiement comme échoué |
+Voici un exemple de réponse de webhook pour un paiement mobile avec le statut "réussi" :
+```javascript Json
+{
+"event": "charge.successful",
+"data": {
+"id": 932,
+"authorization": {
+"mode": "NONE",
+"redirect": null
+},
+"auth_model": "NONE",
+"amount": 50000,
+"currency": "XOF",
+"fee": 699.99,
+"message": "Paiement mobile effectué avec succès",
+"status": "réussi",
+"reference": "98329uniwud",
+"description": "",
+"type": "mobile_money",
+"customer": {
+"name": "Développeurs de Bictorys",
+"email": "info@bictorys.com",
+"phoneNumber": "+2348142986562"
+},
+"settlementDestination": "Wallet"
+}
+}
+```

@@ -1,0 +1,78 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Ajouter une adresse IP Privée
+Pour établir une communication sécurisée entre votre application et Bictorys, il est nécessaire de faire figurer votre adresse IP sur la liste blanche en liant à votre clé API. Sans attachement de votre adresse IP de serveur à une clé, vous ne pourrez pas effectuer de requêtes vers nos points d'accès.
+Bictorys répondra avec un message d'erreur lorsque toute adresse IP non liée à la clé privée tentera d'accéder à nos points d'accès.
+```javascript 403 forbiden
+{
+"success": false,
+"error": "Your IP address is not allowed to access this service",
+"errorType": "ACCESS_DENIED"
+}
+```
+Étapes pour lier votre adresse IP privée
+> 📘 Note
+>
+> Lorsque vous êtes en mode Live, l'adresse IP fournie doit être l'adresse publique de votre serveur. Vous pouvez également faire de même pour les tests sur le bac à sable (mode test). Cependant, nous ne sommes pas stricts en ce qui concerne des adresses IP spécifiques en mode test, car nous comprenons que certains de ces tests peuvent être effectués avec Postman.
+# Etape 1
+[Connectez-vous](https://dashboard.bictorys.com) à votre tableau de bord Bictorys.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/3268f28-Screen_Shot_2023-11-07_at_7.58.03_AM.png",
+"This is some image...",
+"Login"
+],
+"align": "center"
+}
+]
+}
+[/block]
+Etape 2
+Accédez à la page developpeurs, que vous pouvez atteindre via le menu lattéral.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/292dffc-Developpeurs.png",
+"This is some image...",
+"Login"
+],
+"align": "center"
+}
+]
+}
+[/block]
+# Etape 3
+Creer une clé privée et configurer vos permissions
+# Etape 4
+Saisissez une adresse IP de serveur valide.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/713f39e-Screen_Shot_2023-11-07_at_8.50.59_AM.png",
+"This is some image...",
+"Login"
+],
+"align": "center"
+}
+]
+}
+[/block]
+Si votre adresse IP est dynamique et que vous souhaitez permettre l'accès depuis n'importe quelle adresse IP en utilisant vos identifiants, vous pouvez définir l'adresse IP sur l'adresse IP générique "0.0.0.0". Nous n'acceptons que des adresses IP réelles et non des blocs CIDR (par exemple, 0.0.0.0/0).
+> ❗️ Attention
+>
+> Faites preuve d'une extrême prudence lorsque vous envisagez d'autoriser l'adresse IP 0.0.0.0 sur la liste blanche. Cette action est fortement déconseillée et est entreprise entièrement à vos propres risques. Elle ouvre la porte aux requêtes depuis n'importe quelle adresse IP utilisant votre clé API. Bictorys décline expressément toute responsabilité pour les conséquences découlant de cette décision.
+>
+> Notez que pour que l'adresse IP dynamique soit en vigueur, vous ne pouvez avoir qu'une seule entrée de "0.0.0.0". Si vous avez déjà saisi une adresse IP avant cela, contactez le support pour supprimer l'adresse IP précédemment saisie.
+# Etape 5
+> 👍 Success
+>
+> Enregistrez les modifications et vérifiez la notification de succès.

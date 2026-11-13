@@ -1,0 +1,16 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Test vs Environment direct
+# Environnement
+L’API de Bictorys prend en charge deux environnements : Live et Test.\
+Il est important de noter que l’environnement Test est entièrement dédié aux simulations et utilise des données fictives, tandis que l’environnement Live exécute des transactions réelles avec des données opérationnelles.
+Les mêmes identifiants de connexion sont utilisés une fois votre compte activé en production. Un bouton de basculement (toggle) sur le dashboard vous permet de passer facilement d’un environnement à l’autre.
+Cependant, en mode Live, vous devez impérativement utiliser l’API Key de Live et configurer le webhook en mode Live.
+Vous trouverez ci-dessous les URL correspondant aux deux environnements pris en charge :
+URL de l'Environnement de Test : \[ \
+URL de l'Environnement Live : \[
+> 👍 C'est le moment parfait pour créer un compte !
+>
+> Pour garantir une expérience d'intégration transparente, vous aurez besoin de vos clés API. Ces clés peuvent être obtenues soit en [créant un compte](https://register.bictorys.com), soit en nous contactant directement.

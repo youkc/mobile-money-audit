@@ -1,0 +1,1849 @@
+PayTech API - Documentation
+Pour commencer
+Introduction
+Généralités
+Dépôt officiel - Plugins
+URL de base
+Clés API
+Environnements
+Méthodes de paiement
+Paiement avec redirection
+Demande de paiement
+🧪 Testeur API
+APIs Avancées
+APIs Supplémentaires
+API Transfer
+API SMS
+APIs de Statut
+API Remboursement
+Intégration côté serveur
+Node.js
+PHP
+PHP SDK
+Java/Spring Boot
+Laravel
+Django
+Intégration côté client
+Web SDK
+Applications mobiles
+Android
+iOS
+Flutter
+Notifications (IPN)
+Fonctionnement
+Exemples d'utilisation
+Documentation API PayTech
+Intégrez facilement les paiements en ligne dans vos applications avec PayTech. Cette documentation vous guidera à travers toutes les étapes nécessaires.
+Version PDF disponible
+Vous pouvez télécharger la version PDF résumée avec des exemples en Java ici .
+Démarrage rapide
+1. Obtenir vos clés API
+Inscrivez-vous sur la plateforme PayTech et récupérez vos clés API depuis le dashboard.
+2. Installer le SDK
+Téléchargez et installez le SDK correspondant à votre plateforme de développement.
+3. Effectuer un paiement
+Utilisez nos exemples de code pour intégrer rapidement les paiements.
+Assistance IA pour l'intégration
+Besoin d'aide personnalisée ? Utilisez des assistants IA comme Claude ou ChatGPT pour vous guider dans l'intégration PayTech.
+Prompt recommandé pour l'IA
+Copiez et collez ce prompt dans Claude, ChatGPT ou tout autre assistant IA :
+Astuce
+Ce prompt garantit que l'IA utilisera uniquement la documentation officielle PayTech comme source d'information.
+Could you please help me implement PayTech payment gateway integration in my backend and frontend application? I need assistance with the following:
+CRITICAL INSTRUCTION: Base ALL your recommendations EXCLUSIVELY on these two sources:
+- The official PayTech documentation at https://doc.intech.sn/doc_paytech.php
+- The PayTech Postman collection at https://doc.intech.sn/PayTech%20x%20DOC.postman_collection.json
+DO NOT use any other sources of information beyond these two specified resources.
+Please help me with:
+1. Setting up the PayTech API in my backend (including required packages, controller setup, and environment configuration)
+2. Sample code for handling payment requests, webhooks, and callbacks in my backend
+3. Implementation of the client-side integration in my frontend application (including necessary packages and UI components)
+4. Best practices for secure payment processing and error handling
+5. Specific code examples for both the backend and frontend, with explanations of how they work together
+Please first ask me about my backend and frontend technology stack to provide the most accurate implementation guidance.
+If any information is not available in the specified documentation sources, please explicitly state this rather than using other sources or making assumptions.
+Avantages de l'assistance IA
+Code personnalisé pour votre stack technologique
+Explications détaillées étape par étape
+Résolution de problèmes spécifiques
+Meilleures pratiques de sécurité
+Frameworks supportés
+Laravel / Symfony (PHP)
+Django / FastAPI (Python)
+Express.js / NestJS (Node.js)
+Spring Boot (Java)
+Flutter / React Native (Mobile)
+Généralités
+Notre documentation vous fournit toutes les informations nécessaires pour utiliser nos API. Les SDK sont disponibles pour différentes plateformes et sont régulièrement mis à jour.
+Types de SDK disponibles
+SDK côté client : Pour navigateurs web, Android et iOS
+SDK côté serveur : PHP, Ruby, Python, Node.js pour interagir avec les serveurs PayTech
+Important
+CORS n'est pas activé sur les serveurs PayTech. Vos clés API doivent rester confidentielles, utilisez toujours un contrôleur côté serveur pour les requêtes.
+Dépôt officiel et plugins
+Téléchargez les SDK et plugins officiels PayTech pour votre plateforme :
+Drupal Commerce
+Module pour Drupal Commerce
+Télécharger
+WooCommerce
+Plugin PayTech 6.0.3 - Mise à jour 07/04/2025
+Télécharger
+PrestaShop
+Module pour PrestaShop
+Télécharger
+PHP SDK
+SDK PHP standalone
+Télécharger
+Java SDK
+SDK Java complet avec exemples
+SDK
+Documentation
+Android
+Library & projet test Android
+Télécharger
+iOS
+Library iOS via CocoaPods
+Voir sur CocoaPods
+Collection Postman
+Testez directement nos APIs avec Postman
+Télécharger
+Go Gin Demo
+Exemple d'intégration avec Go et Gin framework
+Voir sur GitHub
+Rust Axum Demo
+Exemple d'intégration avec Rust et Axum framework
+Voir sur GitHub
+Flutter Package
+Package Flutter officiel pour l'intégration PayTech
+Voir sur pub.dev
+Laravel PayTech
+Package Laravel pour une intégration facile de PayTech
+Voir sur GitHub
+URL de base
+L'URL de base de l'API PayTech est :
+URL_BASE: "https://paytech.sn/api"
+Clés API
+Les clés API sont nécessaires pour authentifier vos requêtes. Pour obtenir vos clés :
+Inscrivez-vous sur la plateforme PayTech
+Accédez au Dashboard
+Cliquez sur Paramètres puis API
+Récupérez ou régénérez vos clés
+Utilisation des clés dans les headers
+Toutes les requêtes doivent inclure vos clés dans les headers :
+curl "https://paytech.sn/api/endpoint" \
+-H "API_KEY: votre_cle_api" \
+-H "API_SECRET: votre_cle_secrete"
+Environnements
+PayTech propose deux environnements pour vos intégrations : Test et Production . Il est crucial de comprendre les différences et les limitations de chaque environnement.
+Important
+Si votre compte n'est pas activé pour la production, vous ne pouvez utiliser que env=test . Toute tentative d'utilisation de env=prod avec un compte non activé génèrera une erreur vous demandant de contacter le support.
+Environnement Test (Sandbox)
+Paramètre : env=test
+Usage : Développement et tests internes uniquement
+Montant débité : Montant aléatoire entre 100 et 150 CFA (indépendamment du montant de la transaction)
+Limitation : Ne doit pas être utilisé pour des transactions publiques
+Activation : Disponible immédiatement pour tous les comptes
+Note importante
+En mode test, au moment du paiement, seul un montant aléatoire entre 100 et 150 CFA sera débité au client, peu importe le montant réel de la transaction.
+Environnement Production
+Paramètre : env=prod
+Usage : Transactions réelles en production
+Montant débité : Montant exact de la transaction
+Activation : Requiert une validation manuelle de votre compte
+Sécurité : Transactions sécurisées et conformes
+Activation du compte pour la production
+Pour activer votre compte PayTech en mode production, suivez cette procédure :
+Étape 1 : Envoi de la demande
+Envoyez un email à contact@paytech.sn avec pour objet " Activation Compte PayTech "
+Documents requis à joindre :
+Numéro NINEA
+Pièce d'identité ou passeport
+Registre de commerce
+Document de statut de votre entreprise
+Justificatif de domicile (facture SEN'EAU, SENELEC, ... ou certificat de résidence)
+Votre numéro de téléphone où nous pouvons vous joindre
+Informations relatives à votre activité
+Suivi de votre dossier
+Pour obtenir des détails sur l'état d'avancement de votre dossier, appelez notre numéro dédié : +221 77 125 57 99
+Délai de traitement
+Si après 48 heures vous n'avez pas de nouvelles de notre équipe, recontactez-nous au +221 77 125 57 99 pour un suivi personnalisé de votre dossier.
+Configuration dans le code
+Voici comment configurer l'environnement dans vos intégrations :
+JavaScript
+// Configuration pour l'environnement de test
+const paymentData = {
+item_name: "Nom de l'article",
+item_price: 500,
+currency: "XOF",
+ref_command: "CMD_" + Date.now(),
+command_name: "Commande test",
+env: "test", // Utiliser "prod" pour la production
+// ... autres paramètres
+};
+// Configuration pour l'environnement de production (compte activé requis)
+const paymentDataProd = {
+item_name: "Nom de l'article",
+item_price: 500,
+currency: "XOF",
+ref_command: "CMD_" + Date.now(),
+command_name: "Commande réelle",
+env: "prod", // Nécessite un compte activé
+// ... autres paramètres
+};
+PHP
+<?php
+// Configuration pour l'environnement de test
+$paymentData = [
+'item_name' => 'Nom de l\'article',
+'item_price' => 500,
+'currency' => 'XOF',
+'ref_command' => 'CMD_' . time(),
+'command_name' => 'Commande test',
+'env' => 'test', // Utiliser 'prod' pour la production
+// ... autres paramètres
+];
+// Configuration pour l'environnement de production (compte activé requis)
+$paymentDataProd = [
+'item_name' => 'Nom de l\'article',
+'item_price' => 500,
+'currency' => 'XOF',
+'ref_command' => 'CMD_' . time(),
+'command_name' => 'Commande réelle',
+'env' => 'prod', // Nécessite un compte activé
+// ... autres paramètres
+];
+?>
+Attention
+Le mode Sandbox est exclusivement destiné aux développeurs pour tester leur site en interne. Ne l'utilisez jamais pour des transactions publiques. Attendez la confirmation de notre équipe avant de passer en environnement de production ou de mettre votre site en public.
+Paiement avec redirection
+Le paiement avec redirection permet de rediriger vos clients vers la plateforme PayTech pour finaliser le paiement. Cette méthode est idéale si vous souhaitez déléguer l'hébergement de la page de paiement.
+Avantages
+Sécurité maximale - Aucune donnée sensible ne transite par vos serveurs
+Conformité PCI DSS automatique
+Multiple méthodes de paiement disponibles
+Interface optimisée mobile
+Demande de paiement
+Pour initier un paiement, envoyez une requête POST à notre API avec les paramètres requis.
+POST
+/payment/request-payment
+Paramètres de la requête
+Paramètre
+Type
+Obligatoire
+Description
+item_name
+string
+Oui
+Nom du produit ou service
+item_price
+number
+Oui
+Prix de la commande
+ref_command
+string
+Oui
+Référence unique de la commande
+command_name
+string
+Oui
+Description de la commande
+currency
+string
+Non
+Devise (XOF, EUR, USD, CAD, GBP, MAD). Par défaut: XOF
+env
+string
+Non
+Environnement (test, prod). Par défaut: prod
+ipn_url
+string
+Non
+URL de notification (HTTPS uniquement)
+success_url
+string
+Non
+URL de redirection après paiement réussi
+cancel_url
+string
+Non
+URL de redirection après annulation
+custom_field
+string (JSON)
+Non
+Données additionnelles (JSON encodé)
+target_payment
+string
+Non
+Méthode de paiement ciblée (ex: "Orange Money") "" default
+refund_notif_url
+string
+Non
+URL de notification pour les remboursements (HTTPS)
+Méthodes de paiement ciblées avec target_payment
+Le paramètre target_payment permet de spécifier quelles méthodes de paiement sont disponibles sur la page de checkout. Il peut contenir une seule méthode ou plusieurs méthodes séparées par des virgules.
+Exemples d'utilisation :
+Méthode unique : "target_payment": "Orange Money"
+Plusieurs méthodes : "target_payment": "Orange Money, Wave, Free Money"
+Avantage
+Quand une seule méthode est spécifiée, vous pouvez pré-remplir les informations client et activer la soumission automatique.
+Méthodes de paiement disponibles :
+Orange Money
+Orange Money CI
+Orange Money ML
+Mtn Money CI
+Moov Money CI
+Moov Money ML
+Wave
+Wave CI
+Wizall
+Carte Bancaire
+Emoney
+Tigo Cash
+Free Money
+Moov Money BJ
+Mtn Money BJ
+Pré-remplissage automatique des informations client
+Lorsque vous utilisez une méthode de paiement unique avec target_payment , vous pouvez ajouter des paramètres à l'URL de checkout pour pré-remplir les informations client et activer la soumission automatique.
+Paramètre URL
+Description
+Exemple
+pn
+Numéro de téléphone avec indicatif pays
++221777777777
+nn
+Numéro de téléphone format national
+777777777
+fn
+Nom complet du client
+John Smith
+tp
+Méthode de paiement (même valeur que target_payment)
+Orange Money
+nac
+Auto-submit (0=manuel, 1=automatique)
+1
+Important pour les cartes bancaires
+Pour target_payment: "Carte Bancaire" , utilisez toujours nac: 1 pour désactiver la soumission automatique et laisser l'utilisateur saisir ses informations bancaires.
+Démonstration Auto-Submit
+Regardez cette vidéo pour voir comment fonctionne la soumission automatique avec les différentes méthodes de paiement :
+Votre navigateur ne supporte pas la lecture de vidéos. Télécharger la vidéo
+Ce que vous verrez dans la vidéo :
+• Comportement avec nac=0 (soumission automatique)
+• Comportement avec nac=1 (soumission manuelle)
+• Différences selon les méthodes de paiement
+• Impact sur l'expérience utilisateur
+Exemple d'URL complète avec pré-remplissage :
+https://paytech.sn/payment/checkout/405gzxpmbx0z8sv?pn=+221777777777&nn=777777777&fn=John%20Smith&tp=Orange%20Money&nac=1
+Exemples de demandes
+Demande avec méthode unique (pré-remplissage possible) :
+{
+"item_name": "iPhone 14 Pro",
+"item_price": 650000,
+"currency": "XOF",
+"ref_command": "CMD_1735234567890",
+"command_name": "Achat iPhone 14 Pro - Boutique TechSN",
+"target_payment": "Orange Money",
+"ipn_url": "https://partner-domaine.com/api/payment_success_ipn_callback",
+"refund_notif_url": "https://partner-domaine.com/api/payment_refund_ipn_callback",
+"success_url": "https://partner-domaine.com/payment_success",
+"cancel_url": "https://partner-domaine.com/payment_canceled",
+"custom_field": "{\"user_id\": 12345, \"email\": \"client@example.com\"}"
+}
+Demande avec plusieurs méthodes :
+{
+"item_name": "Business plane ticket Paris-Dakar",
+"item_price": 500000,
+"currency": "XOF",
+"ref_command": "FLIGHT_QO33IXSVTHSK48LD",
+"command_name": "Purchase of business plane tickets for John Mcarty",
+"target_payment": "Orange Money, Wave, Free Money",
+"ipn_url": "https://partner-domaine.com/api/payment_success_ipn_callback",
+"success_url": "https://partner-domaine.com/payment_success",
+"cancel_url": "https://partner-domaine.com/payment_canceled",
+"custom_field": "{\"flight_id\": \"AF456\", \"passenger_count\": 3}"
+}
+Réponse de l'API
+{
+"success": 1,
+"token": "40j515fgrkynl56hi",
+"redirect_url": "https://paytech.sn/payment/checkout/40j515fgrkynl56hi",
+"redirectUrl": "https://paytech.sn/payment/checkout/40j515fgrkynl56hi"
+}
+Intégration Node.js
+Exemple d'intégration avec Node.js pour créer une demande de paiement :
+const fetch = require('node-fetch');
+const { URLSearchParams } = require('url');
+// Informations utilisateur (exemple)
+const user = {
+phone_number: '+221777777777',
+first_name: 'John',
+last_name: 'Smith'
+};
+const paymentRequestUrl = "https://paytech.sn/api/payment/request-payment";
+const payment_method = "Orange Money"; // Méthode unique pour autofill
+const params = {
+item_name: "iPhone 14 Pro",
+item_price: 650000,
+currency: "XOF",
+ref_command: "CMD_" + Date.now(),
+command_name: "Achat iPhone 14 Pro - PayTech",
+target_payment: payment_method, // Spécifier la méthode de paiement
+env: "test",
+ipn_url: "https://votre-domaine.com/ipn",
+success_url: "https://votre-domaine.com/success",
+cancel_url: "https://votre-domaine.com/cancel",
+custom_field: JSON.stringify({
+user_id: "12345",
+email: "john.smith@example.com"
+})
+};
+const headers = {
+'Accept': "application/json",
+'Content-Type': "application/json",
+'API_KEY': "votre_cle_api",
+'API_SECRET': "votre_cle_secrete"
+};
+fetch(paymentRequestUrl, {
+method: 'POST',
+body: JSON.stringify(params),
+headers: headers
+})
+.then(response => response.json())
+.then(jsonResponse => {
+if (jsonResponse.success === 1) {
+let redirectUrl = jsonResponse.redirect_url;
+// Ajouter les paramètres d'autofill si méthode unique
+if (payment_method && !payment_method.includes(',')) {
+const queryParams = new URLSearchParams({
+'pn': user.phone_number, // +221777777777
+'nn': user.phone_number.slice(4), // 777777777
+'fn': `${user.first_name} ${user.last_name}`, // John Smith
+'tp': payment_method, // Orange Money
+'nac': payment_method === 'Carte Bancaire' ? '0' : '1' // Auto-submit
+});
+redirectUrl += '?' + queryParams.toString();
+}
+console.log('URL de paiement avec autofill:', redirectUrl);
+console.log('Token:', jsonResponse.token);
+// Rediriger l'utilisateur vers cette URL
+// window.location.href = redirectUrl; // Dans un navigateur
+} else {
+console.error('Erreur:', jsonResponse.message);
+}
+})
+.catch(error => {
+console.error('Erreur réseau:', error);
+});
+{
+"success": 1,
+"token": "98b1c97af00c8b2a92f2",
+"redirect_url": "https://paytech.sn/payment/checkout/98b1c97af00c8b2a92f2"
+}
+Intégration PHP
+Exemple d'intégration avec PHP natif :
+function sendPaymentRequest($api_key, $api_secret, $params, $user = null) {
+$url = 'https://paytech.sn/api/payment/request-payment';
+$postFields = [
+"item_name" => $params['name'],
+"item_price" => $params['price'],
+"currency" => "XOF",
+"ref_command" => uniqid('CMD_'),
+"command_name" => "Commande " . $params['name'],
+"target_payment" => $params['payment_method'] ?? '', // Méthode de paiement ciblée
+"env" => "test",
+"success_url" => "https://votre-site.com/success",
+"ipn_url" => "https://votre-site.com/ipn",
+"cancel_url" => "https://votre-site.com/cancel",
+"custom_field" => json_encode([
+'order_id' => $params['order_id'],
+'user_id' => $params['user_id'],
+'email' => $user['email'] ?? ''
+])
+];
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($postFields));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+'API_KEY: ' . $api_key,
+'API_SECRET: ' . $api_secret,
+'Content-Type: application/x-www-form-urlencoded'
+]);
+$response = curl_exec($ch);
+curl_close($ch);
+$result = json_decode($response, true);
+// Ajouter les paramètres d'autofill si méthode unique et utilisateur fourni
+if ($result['success'] === 1 && $user && !empty($params['payment_method']) &&
+strpos($params['payment_method'], ',') === false) {
+$query_params = [
+'pn' => $user['phone_number'], // +221777777777
+'nn' => substr($user['phone_number'], 4), // 777777777
+'fn' => $user['first_name'] . ' ' . $user['last_name'], // John Smith
+'tp' => $params['payment_method'], // Orange Money
+'nac' => ($params['payment_method'] === 'Carte Bancaire') ? '0' : '1' // Auto-submit
+];
+$result['redirect_url'] .= '?' . http_build_query($query_params);
+$result['redirectUrl'] = $result['redirect_url'];
+}
+return $result;
+}
+// Informations utilisateur (exemple)
+$user = [
+'phone_number' => '+221777777777',
+'first_name' => 'John',
+'last_name' => 'Smith',
+'email' => 'john.smith@example.com'
+];
+// Utilisation avec méthode unique et autofill
+$result = sendPaymentRequest($api_key, $api_secret, [
+'name' => 'MacBook Pro M3',
+'price' => 1500000,
+'payment_method' => 'Orange Money', // Méthode unique pour autofill
+'order_id' => '12345',
+'user_id' => '67890'
+], $user);
+if ($result['success'] === 1) {
+echo "URL de paiement avec autofill: " . $result['redirect_url'];
+// Rediriger le client vers l'URL de paiement
+// header('Location: ' . $result['redirect_url']);
+// exit;
+} else {
+echo "Erreur: " . $result['message'];
+}
+// Exemple avec plusieurs méthodes (pas d'autofill)
+$result_multi = sendPaymentRequest($api_key, $api_secret, [
+'name' => 'iPhone 14 Pro',
+'price' => 650000,
+'payment_method' => 'Orange Money, Wave, Free Money', // Plusieurs méthodes
+'order_id' => '12346',
+'user_id' => '67891'
+]);
+if ($result_multi['success'] === 1) {
+echo "URL de paiement multi-méthodes: " . $result_multi['redirect_url'];
+}
+PHP SDK
+Utilisation simplifiée avec le SDK PHP PayTech :
+require 'PayTech.php';
+$paytech = new PayTech($apiKey, $apiSecret);
+$response = $paytech->setQuery([
+'item_name' => $item->name,
+'item_price' => $item->price,
+'command_name' => "Paiement {$item->name} via PayTech",
+])
+->setCustomeField([
+'item_id' => $item->id,
+'time_command' => time(),
+'ip_user' => $_SERVER['REMOTE_ADDR']
+])
+->setTestMode(true)
+->setCurrency('XOF')
+->setRefCommand(uniqid())
+->setNotificationUrl([
+'ipn_url' => 'https://votre-site.com/ipn',
+'success_url' => 'https://votre-site.com/success',
+'cancel_url' => 'https://votre-site.com/cancel'
+])
+->send();
+$data = json_decode($response, true);
+if ($data['success'] === 1) {
+header('Location: ' . $data['redirect_url']);
+exit;
+}
+Web SDK
+Intégration côté client pour les applications web avec le SDK JavaScript PayTech.
+Installation
+Incluez le SDK PayTech dans votre page HTML :
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://paytech.sn/cdn/paytech.min.css">
+<script src="https://paytech.sn/cdn/paytech.min.js"></script>
+</head>
+Implémentation
+1. Créez un bouton de paiement avec les données de transaction :
+<button onclick="makePayment(this)"
+data-id-transaction="UYH8HAB54SG">
+Payer cette transaction
+</button>
+2. Implémentez la fonction de paiement :
+function makePayment(btn) {
+var idTransaction = pQuery(btn).attr('data-id-transaction');
+(new PayTech({
+idTransaction: idTransaction,
+})).withOption({
+requestTokenUrl: 'https://votre-domaine.com/requestPayment',
+method: 'POST',
+headers: {},
+presentationMode: PayTech.OPEN_IN_POPUP,
+didReceiveError: function (error) {
+console.log("Erreur:", error);
+},
+didReceiveNonSuccessResponse: function (jsonResponse) {
+console.log("Réponse non-succès:", jsonResponse);
+}
+}).send();
+}
+Modes de présentation
+Mode
+Description
+Utilisation
+PayTech.OPEN_IN_POPUP
+Ouvre le paiement dans une popup
+Recommandé pour une meilleure UX
+PayTech.OPEN_IN_NEW_TAB
+Ouvre dans un nouvel onglet
+Bon pour mobile
+PayTech.OPEN_IN_SAME_TAB
+Redirige dans le même onglet
+Expérience classique
+Configuration côté serveur
+Votre endpoint requestTokenUrl doit traiter la demande et retourner un token PayTech :
+// Exemple Node.js/Express
+app.post('/requestPayment', (req, res) => {
+const { idTransaction } = createTransaction(req.data);
+const amount = 5000; // Prix depuis votre base de données
+const paymentTitle = `Paiement facture №${idTransaction} de ${amount} FCFA`;
+// Appel à l'API PayTech pour obtenir le token
+const paymentData = {
+item_name: paymentTitle,
+item_price: amount,
+currency: "XOF",
+ref_command: `TXN-${Date.now()}-${idTransaction}`,
+command_name: paymentTitle,
+env: "test", // ou "prod"
+ipn_url: "https://votre-domaine.com/ipn",
+success_url: "https://votre-domaine.com/success",
+cancel_url: "https://votre-domaine.com/cancel",
+custom_field: JSON.stringify({ transactionId: idTransaction })
+};
+fetch('https://paytech.sn/api/payment/request-payment', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'API_KEY': process.env.PAYTECH_API_KEY,
+'API_SECRET': process.env.PAYTECH_API_SECRET
+},
+body: JSON.stringify(paymentData)
+})
+.then(response => response.json())
+.then(data => {
+res.json(data);
+})
+.catch(error => {
+res.status(500).json({ success: 0, message: error.message });
+});
+});
+Exemple complet
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Paiement PayTech</title>
+<link rel="stylesheet" href="https://paytech.sn/cdn/paytech.min.css">
+<script src="https://paytech.sn/cdn/paytech.min.js"></script>
+</head>
+<body>
+<div class="payment-container">
+<h3>Commande #12345</h3>
+<p>Montant: 5000 FCFA</p>
+<button onclick="makePayment(this)"
+data-id-transaction="12345"
+class="btn-pay">
+Payer maintenant
+</button>
+</div>
+<script>
+function makePayment(btn) {
+var idTransaction = btn.getAttribute('data-id-transaction');
+(new PayTech({
+idTransaction: idTransaction,
+})).withOption({
+requestTokenUrl: '/api/requestPayment',
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+presentationMode: PayTech.OPEN_IN_POPUP,
+didReceiveError: function (error) {
+alert('Erreur: ' + error);
+},
+didReceiveNonSuccessResponse: function (jsonResponse) {
+alert('Erreur: ' + jsonResponse.message);
+}
+}).send();
+}
+</script>
+</body>
+</html>
+Modes de présentation
+Mode
+Description
+PayTech.OPEN_IN_POPUP
+Ouvre le paiement dans une popup
+PayTech.OPEN_IN_NEW_TAB
+Ouvre dans un nouvel onglet
+PayTech.OPEN_IN_SAME_TAB
+Redirige dans le même onglet
+PayTech.DO_NOTHING
+Retourne l'URL sans action
+Testeur API Interactif
+Testez directement les API PayTech depuis cette interface. Entrez vos clés API et testez les endpoints en temps réel.
+Attention
+Vos clés API ne sont jamais envoyées ou stockées sur nos serveurs. Tous les tests sont effectués directement depuis votre navigateur.
+Configuration API
+Clé API:
+Clé Secrète:
+URL de Base:
+Nom du produit:
+Prix (FCFA):
+Référence commande:
+Méthode de paiement:
+Référence de la commande:
+Montant (FCFA):
+Numéro de téléphone:
+Méthode de transfer:
+Référence transfer:
+Réponse API
+// La réponse API s'affichera ici après le test
+// Les headers de réponse s'afficheront ici
+// La commande cURL équivalente s'affichera ici
+APIs Supplémentaires
+PayTech propose plusieurs APIs avancées pour étendre les fonctionnalités de votre intégration.
+API de Transfer
+L'API de transfer vous permet d'envoyer de l'argent directement vers des comptes mobile money.
+POST
+/transfer/transferFund
+Paramètres
+Paramètre
+Type
+Obligatoire
+Description
+amount
+number
+Oui
+Montant à transférer
+destination_number
+string
+Oui
+Numéro de téléphone du destinataire
+service
+string
+Oui
+Service de mobile money (ex: "Orange Money Senegal")
+callback_url
+string
+Non
+URL de callback pour les notifications
+external_id
+string
+Non
+Identifiant externe pour traçabilité
+// Exemple Node.js - Transfer API
+const transferData = {
+amount: 1000,
+destination_number: "772457199",
+service: "Orange Money Senegal",
+callback_url: "https://votre-site.com/transfer-callback",
+external_id: "TXN_" + Date.now()
+};
+fetch('https://paytech.sn/api/transfer/transferFund', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'API_KEY': 'votre_cle_api',
+'API_SECRET': 'votre_cle_secrete'
+},
+body: JSON.stringify(transferData)
+})
+.then(response => response.json())
+.then(data => {
+if (data.success === 1) {
+console.log('Transfer initié:', data.transfer);
+}
+});
+Réponse de l'API Transfer
+{
+"success": 1,
+"message": "Votre transfer est en cours de traitement",
+"transfer": {
+"created_at": "2024-04-17T02:33:05.000Z",
+"token_transfer": "J70WHGCSLV37738Z",
+"id_transfer": "PYT-DEPOT-J70WHGCSLV37738Y",
+"amount": 200,
+"amount_xof": 200,
+"service_items_id": "MOOV_BJ_API_CASH_IN",
+"service_name": "Moov Money BJ",
+"state": "pending",
+"destination_number": "94512412",
+"validate_at": null,
+"failed_at": null,
+"fee_percent": 1,
+"rejected_at": null
+}
+}
+API SMS
+Envoyez des SMS via l'API PayTech.
+POST
+/sms/sms_api
+// Exemple d'envoi de SMS
+const smsData = {
+destination_number: "+221772457199",
+sms_content: "Votre paiement a été confirmé avec succès!"
+};
+fetch('https://paytech.sn/api/sms/sms_api', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'API_KEY': 'votre_cle_api',
+'API_SECRET': 'votre_cle_secrete'
+},
+body: JSON.stringify(smsData)
+})
+.then(response => response.json())
+.then(data => {
+if (data.success === true) {
+console.log('SMS envoyé:', data.message);
+}
+});
+Réponse de l'API SMS
+{
+"success": true,
+"message": "Votre message a été envoyé avec succès vers +221772457199"
+}
+APIs de Statut
+Statut de Paiement
+GET
+/payment/get-status?token_payment={token}
+// Exemple de vérification de statut de paiement
+fetch('https://paytech.sn/api/payment/get-status?token_payment=40j515fgrkynl56hi', {
+method: 'GET',
+headers: {
+'API_KEY': 'votre_cle_api',
+'API_SECRET': 'votre_cle_secrete'
+}
+})
+.then(response => response.json())
+.then(data => console.log(data));
+Statut de Transfer
+GET
+/transfer/get-status?id_transfer={id}
+// Exemple de vérification de statut de transfer
+fetch('https://paytech.sn/api/transfer/get-status?id_transfer=PYT-DEPOT-2QV4WGSULUALINQ8', {
+headers: {
+'API_KEY': 'votre_cle_api',
+'API_SECRET': 'votre_cle_secrete'
+}
+})
+.then(response => response.json())
+.then(data => console.log(data));
+Réponse statut transfer
+{
+"success": 1,
+"transfer": {
+"created_at": "2024-03-28T02:08:40.000Z",
+"token_transfer": null,
+"id_transfer": "PYT-DEPOT-2QV4WGSULUALINQ8",
+"amount": 500,
+"amount_xof": 500,
+"service_items_id": "WAVE_SN_API_CASH_IN",
+"service_name": "Wave Senegal",
+"state": "failed",
+"destination_number": "772457199",
+"validate_at": "2024-03-28T03:37:12.000Z",
+"failed_at": null,
+"fee_percent": 1,
+"rejected_at": "2024-03-28T03:37:43.000Z"
+}
+}
+Historique des Transfers
+GET
+/transfer/get-history
+Paramètres de requête :
+Paramètre
+Description
+Exemple
+start_date
+Date de début (YYYY-MM-DD)
+2024-01-20
+end_date
+Date de fin (YYYY-MM-DD)
+2024-05-20
+page
+Numéro de page
+1
+search_phone
+Recherche par numéro
+772457199
+status_in
+Filtrer par statuts (séparés par virgule)
+pending,failed,success
+Informations du Compte
+GET
+/transfer/get-account-info
+// Informations du compte
+fetch('https://paytech.sn/api/transfer/get-account-info', {
+headers: {
+'API_KEY': 'votre_cle_api',
+'API_SECRET': 'votre_cle_secrete'
+}
+})
+.then(response => response.json())
+.then(data => console.log(data));
+Réponse informations compte
+{
+"success": 1,
+"accountInfo": {
+"solde": 585213.6,
+"hold_amount": 0,
+"fee": 5852.13,
+"totalTransferable": 585213.6,
+"transferableDispo": 579361.46
+}
+}
+API de Remboursement
+POST
+/payment/refund-payment
+Paramètres
+Paramètre
+Type
+Obligatoire
+Description
+ref_command
+string
+Oui
+Référence de la commande à rembourser
+// Exemple PHP - Remboursement
+$refundData = [
+'ref_command' => '5e4e4f297fa21'
+];
+$ch = curl_init('https://paytech.sn/api/payment/refund-payment');
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($refundData));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+'API_KEY: ' . $api_key,
+'API_SECRET: ' . $api_secret
+]);
+$response = curl_exec($ch);
+$result = json_decode($response, true);
+if ($result['success'] === 1) {
+echo "Remboursement initié avec succès";
+} else {
+echo "Erreur: " . $result['message'];
+}
+curl_close($ch);
+Réponses possibles
+Remboursement réussi
+{
+"success": 1,
+"message": "Remboursement initié avec succès"
+}
+Erreur - Commande non trouvée
+{
+"success": -1,
+"message": "Le vendeur n'existe pas ou clé api invalide"
+}
+Méthodes de Paiement Ciblées
+Vous pouvez cibler des méthodes de paiement spécifiques en utilisant le paramètre target_payment .
+Méthodes disponibles
+Orange Money
+Orange Money CI
+Orange Money ML
+Mtn Money CI
+Moov Money CI
+Moov Money ML
+Wave
+Wave CI
+Wizall
+Carte Bancaire
+Emoney
+Tigo Cash
+Free Money
+Moov Money BJ
+Mtn Money BJ
+Intégration Java
+Intégration complète avec Java/Spring Boot pour applications d'entreprise.
+Configuration de base
+public class PayTech {
+private static final String API_KEY = "YOUR_API_KEY";
+private static final String API_SECRET = "YOUR_API_SECRET";
+private static final String PAYMENT_IPN_URL = "https://yoursite.com/ipn";
+private static final String SUCCESS_URL = "https://yoursite.com/success";
+private static final String CANCEL_URL = "https://yoursite.com/cancel";
+private static final boolean IS_PRODUCTION = true;
+public static String sendPaymentRequest(String transactionId, int amount, String title) {
+try {
+Map params = new HashMap<>();
+params.put("item_name", title);
+params.put("item_price", String.valueOf(amount));
+params.put("currency", "XOF");
+params.put("ref_command", "TXN-" + transactionId + "-" + System.currentTimeMillis());
+params.put("command_name", title);
+params.put("env", IS_PRODUCTION ? "prod" : "test");
+params.put("ipn_url", PAYMENT_IPN_URL);
+params.put("success_url", SUCCESS_URL);
+params.put("cancel_url", CANCEL_URL);
+params.put("custom_field", transactionId);
+return sendRequest(params);
+} catch (Exception e) {
+return "{\"success\": -1, \"message\":\"" + e.getMessage() + "\"}";
+}
+}
+}
+Contrôleur de Paiement
+@RestController
+@RequestMapping("/api/payment")
+public class PaymentController {
+@PostMapping("/request")
+public ResponseEntity requestPayment(@RequestBody PaymentRequest request) {
+String result = PayTech.sendPaymentRequest(
+request.getTransactionId(),
+request.getAmount(),
+request.getDescription()
+);
+return ResponseEntity.ok(result);
+}
+}
+Gestion des IPN
+@PostMapping("/ipn")
+public ResponseEntity handleIPN(HttpServletRequest request) {
+try {
+if (PayTech.ipnFromPayTech(request)) {
+String transactionId = request.getParameter("custom_field");
+String amount = request.getParameter("item_price");
+String paymentMethod = request.getParameter("payment_method");
+// Mettre à jour le statut de la transaction
+paymentService.markAsPaid(transactionId, amount, paymentMethod);
+return ResponseEntity.ok("IPN OK");
+} else {
+return ResponseEntity.badRequest().body("IPN KO - NOT FROM PAYTECH");
+}
+} catch (Exception e) {
+return ResponseEntity.status(500).body(e.getMessage());
+}
+}
+Intégration Android
+Guide d'intégration pour les applications Android.
+Télécharger la librairie
+La librairie Android est disponible au format .aar :
+Télécharger
+Installation
+1. Ajoutez le fichier .aar dans votre projet
+2. Importez les classes nécessaires :
+import sdk.paytech.sn.PCallback;
+import sdk.paytech.sn.PayTech;
+Utilisation
+button.setOnClickListener(new View.OnClickListener() {
+@Override
+public void onClick(View v) {
+HashMap<String, Object> params = new HashMap<>();
+params.put("item_id", productId);
+params.put("user_id", userId);
+new PayTech(MainActivity.this)
+.setRequestTokenUrl("https://votre-api.com/payment/token")
+.setParams(params)
+.setPresentationMode(PayTech.FLOATING_VIEW)
+.setFloatTopMargin(25)
+.setLoadingDialogText("Chargement...")
+.setCallback(new PCallback() {
+@Override
+public void onResult(Result result) {
+switch(result) {
+case SUCCESS:
+Toast.makeText(MainActivity.this,
+"Paiement effectué avec succès",
+Toast.LENGTH_SHORT).show();
+// Traiter le succès
+break;
+case CANCEL:
+Toast.makeText(MainActivity.this,
+"Paiement annulé",
+Toast.LENGTH_SHORT).show();
+break;
+case ERROR:
+Toast.makeText(MainActivity.this,
+"Erreur lors du paiement",
+Toast.LENGTH_SHORT).show();
+break;
+}
+}
+})
+.send();
+}
+});
+Intégration iOS
+Guide d'intégration pour les applications iOS avec Swift.
+Installation via CocoaPods
+Le SDK iOS PayTech est disponible via CocoaPods. Ajoutez cette ligne à votre Podfile :
+pod 'Paytech'
+Installation
+1. Ajoutez PayTech à votre Podfile :
+pod 'Paytech'
+2. Installez les dépendances :
+pod install
+Utilisation
+1. Importez le module PayTech :
+import Paytech
+2. Configurez et lancez le paiement :
+// Configuration du contrôleur PayTech
+let paytechController = PaytechViewController()
+paytechController.delegate = self
+paytechController.requestTokenUrl = URL(string: "https://votre-api.com/payment/token")
+// Paramètres du paiement
+paytechController.params["item_id"] = "PRODUCT_123"
+paytechController.params["user_id"] = "USER_456"
+paytechController.params["amount"] = 15000
+// Lancement du paiement
+paytechController.send()
+// Affichage du contrôleur
+present(paytechController, animated: true, completion: nil)
+Gestion des callbacks
+extension ViewController: PaytechDelegate {
+func paymentDidComplete(with result: PaytechResult) {
+switch result {
+case .success:
+print("Paiement réussi")
+// Traiter le succès du paiement
+case .cancelled:
+print("Paiement annulé par l'utilisateur")
+case .error(let error):
+print("Erreur lors du paiement: \(error.localizedDescription)")
+}
+}
+}
+Configuration avancée
+// Personnalisation de l'interface
+paytechController.backButtonIcon = UIImage(systemName: "arrow.left")
+paytechController.appBarTitle = "Paiement Sécurisé"
+paytechController.centerTitle = true
+paytechController.appBarBgColor = UIColor.systemBlue
+paytechController.hideAppBar = false
+Compatibilité
+iOS 9.0+
+Swift 4+
+Xcode 10+
+Intégration Flutter
+SDK Flutter officiel PayTech pour applications multiplateformes.
+Version recommandée
+Utilisez la version paytech: ^5.0.2 pour la compatibilité avec Dart 3 et compileSdkVersion 34 pour Android.
+Installation
+Ajoutez PayTech à votre pubspec.yaml :
+dependencies:
+paytech: ^5.0.2 # Version compatible Dart 3 et compileSdkVersion 34
+dependency_overrides:
+webview_flutter_android: 3.16.1
+# Pour Flutter legacy
+dependencies:
+paytech: ^4.0.0 # Flutter standard
+# Pour projets sans null-safety
+dependencies:
+paytech: ^3.0.2 # Première introduction null-safety
+# Pour très anciens projets
+dependencies:
+paytech: ^0.1.2 # Pas de support null-safety
+Configuration importante
+URLs spéciales pour Flutter
+Lors de la création d'une demande de paiement, utilisez ces URLs spécifiques :
+success_url: https://paytech.sn/mobile/success
+cancel_url: https://paytech.sn/mobile/cancel
+Utilisation de base
+import 'package:paytech/paytech.dart';
+// Dans votre widget
+ElevatedButton(
+onPressed: () async {
+// URL de paiement obtenue depuis votre backend
+var paymentUrl = "https://paytech.sn/payment/checkout/729b3e3021226cd27905";
+// Navigation vers PayTech
+bool? paymentResult = await Navigator.push(
+context,
+MaterialPageRoute(
+builder: (context) => PayTech(paymentUrl)
+),
+);
+// Traitement du résultat
+if (paymentResult == true) {
+print("Paiement réussi");
+// Traiter le succès
+} else {
+print("Paiement échoué ou annulé");
+// Traiter l'échec
+}
+},
+child: Text('Payer avec PayTech'),
+)
+Personnalisation de l'interface
+PayTech(
+paymentUrl,
+backButtonIcon: Icons.arrow_back_ios,
+appBarTitle: "Paiement Sécurisé",
+centerTitle: true,
+appBarBgColor: Colors.blue,
+appBarTextStyle: TextStyle(
+color: Colors.white,
+fontSize: 18,
+fontWeight: FontWeight.bold,
+),
+hideAppBar: false,
+)
+Support Web (v5.0.2+)
+Pour le support web, ajoutez le fichier web_support.js :
+Téléchargez web_support.js
+Placez-le dans /assets/packages/paytech/assets/web/
+Ajoutez le script dans web/index.html :
+<head>
+<!-- ... autres balises ... -->
+<script type="application/javascript"
+src="/assets/packages/paytech/assets/web/web_support.js"
+defer></script>
+</head>
+Exemple de demande de paiement (Backend)
+// Exemple de structure pour votre API backend
+Map paymentRequest = {
+"item_name": "Abonnement Premium",
+"item_price": 5000,
+"currency": "XOF",
+"ref_command": "CMD_${DateTime.now().millisecondsSinceEpoch}",
+"command_name": "Achat abonnement premium via PayTech Flutter",
+"ipn_url": "https://votre-api.com/ipn",
+"success_url": "https://paytech.sn/mobile/success", // IMPORTANT
+"cancel_url": "https://paytech.sn/mobile/cancel", // IMPORTANT
+"custom_field": jsonEncode({
+"user_id": "USER_123",
+"plan": "premium"
+})
+};
+Intégration Laravel
+Package Laravel officiel pour une intégration simplifiée avec PayTech.
+Package recommandé
+Utilisez le package touskar/laravel-paytech
+pour une intégration Laravel optimisée.
+Installation
+composer require touskar/laravel-paytech
+Configuration
+1. Publiez le fichier de configuration :
+php artisan vendor:publish --provider="Touskar\LaravelPaytech\PaytechServiceProvider"
+2. Configurez vos clés dans .env :
+PAYTECH_API_KEY=votre_cle_api
+PAYTECH_API_SECRET=votre_cle_secrete
+PAYTECH_ENV=test # ou prod
+PAYTECH_SUCCESS_URL=https://votre-site.com/payment/success
+PAYTECH_CANCEL_URL=https://votre-site.com/payment/cancel
+PAYTECH_IPN_URL=https://votre-site.com/payment/ipn
+Utilisation de base
+use Touskar\LaravelPaytech\Paytech;
+class PaymentController extends Controller
+{
+public function createPayment(Request $request)
+{
+$paytech = new Paytech();
+$response = $paytech->setQuery([
+'item_name' => 'Produit test',
+'item_price' => 1000,
+'command_name' => 'Achat produit test',
+])
+->setCustomeField([
+'user_id' => auth()->id(),
+'order_id' => $request->order_id,
+])
+->setTestMode(config('paytech.env') === 'test')
+->setCurrency('XOF')
+->setRefCommand('ORDER_' . time())
+->send();
+$data = json_decode($response, true);
+if ($data['success'] === 1) {
+return redirect($data['redirect_url']);
+}
+return back()->with('error', 'Erreur lors de la création du paiement');
+}
+}
+Gestion des IPN
+use Touskar\LaravelPaytech\Paytech;
+class IPNController extends Controller
+{
+public function handle(Request $request)
+{
+$paytech = new Paytech();
+if ($paytech->verifyIPN($request)) {
+$typeEvent = $request->type_event;
+$customField = json_decode($request->custom_field, true);
+$refCommand = $request->ref_command;
+$amount = $request->item_price;
+$paymentMethod = $request->payment_method;
+if ($typeEvent === 'sale_complete') {
+// Traiter le paiement réussi
+$this->markOrderAsPaid($refCommand, $amount);
+// Notification utilisateur
+$this->notifyUser($customField['user_id'], 'Paiement confirmé');
+} elseif ($typeEvent === 'sale_canceled') {
+// Traiter l'annulation
+$this->markOrderAsCanceled($refCommand);
+}
+return response('IPN OK', 200);
+}
+return response('IPN KO', 403);
+}
+}
+Middleware pour IPN
+// Dans routes/web.php ou routes/api.php
+Route::post('/payment/ipn', [IPNController::class, 'handle'])
+->middleware('paytech.ipn'); // Middleware de vérification automatique
+Blade Helper
+{{-- Dans vos vues Blade --}}
+@paytech([
+'item_name' => 'Mon Produit',
+'item_price' => 2500,
+'button_text' => 'Payer maintenant',
+'button_class' => 'btn btn-primary'
+])
+{{-- Ou avec plus de contrôle --}}
+<form action="{{ route('payment.create') }}" method="POST">
+@csrf
+<input type="hidden" name="amount" value="2500">
+<button type="submit" class="btn btn-success">
+Payer avec PayTech
+</button>
+</form>
+Intégration Django
+Guide d'intégration PayTech pour applications Django.
+Configuration
+# settings.py
+PAYTECH_API_KEY = 'votre_cle_api'
+PAYTECH_API_SECRET = 'votre_cle_secrete'
+PAYTECH_ENV = 'test' # ou 'prod'
+PAYTECH_SUCCESS_URL = 'https://votre-site.com/payment/success/'
+PAYTECH_CANCEL_URL = 'https://votre-site.com/payment/cancel/'
+PAYTECH_IPN_URL = 'https://votre-site.com/payment/ipn/'
+Service PayTech
+# services/paytech_service.py
+import requests
+import hashlib
+import json
+from django.conf import settings
+class PaytechService:
+BASE_URL = 'https://paytech.sn/api'
+@staticmethod
+def request_payment(item_name, item_price, ref_command, custom_field, payment_method, user):
+if custom_field is None:
+custom_field = {}
+url = f'{PaytechService.BASE_URL}/payment/request-payment'
+try:
+response = requests.post(
+url,
+json={
+'item_name': item_name,
+'item_price': item_price,
+'currency': 'xof',
+'ref_command': ref_command,
+'command_name': item_name,
+'env': settings.PAYTECH_ENV,
+'target_payment': payment_method,
+'success_url': "https://paytech.sn/mobile/success",
+'cancel_url': "https://paytech.sn/mobile/cancel",
+'ipn_url': settings.PAYTECH_IPN_URL,
+'custom_field': json.dumps(custom_field),
+},
+headers={
+'API_KEY': settings.PAYTECH_API_KEY,
+'API_SECRET': settings.PAYTECH_API_SECRET,
+}
+)
+json_response = response.json()
+if response.status_code == 201 or response.status_code == 200:
+# Ajouter les paramètres d'autofill si méthode unique
+if payment_method and ',' not in payment_method:
+query_params = {
+'pn': user.phone_number, # +22177xxxxxx
+'nn': user.phone_number[4:], # 77xxxxxx
+'fn': f'{user.first_name} {user.last_name}', # customer full name
+'tp': payment_method, # same value as target_payment
+'nac': 0 if payment_method == 'Carte Bancaire' else 1 # auto submit
+}
+from urllib.parse import urlencode
+query_string = urlencode(query_params)
+json_response['redirectUrl'] = json_response['redirect_url'] = json_response['redirectUrl'] + '?' + query_string
+return json_response
+except requests.exceptions.RequestException as e:
+return {'success': 0, 'message': str(e)}
+@staticmethod
+def verify_ipn(request):
+api_key_sha256 = request.POST.get('api_key_sha256')
+api_secret_sha256 = request.POST.get('api_secret_sha256')
+expected_api_key = hashlib.sha256(
+settings.PAYTECH_API_KEY.encode()
+).hexdigest()
+expected_api_secret = hashlib.sha256(
+settings.PAYTECH_API_SECRET.encode()
+).hexdigest()
+return (expected_api_key == api_key_sha256 and
+expected_api_secret == api_secret_sha256)
+Vues Django
+# views.py
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from .services.paytech_service import PaytechService
+import json
+def create_payment(request):
+if request.method == 'POST':
+item_name = request.POST.get('item_name')
+item_price = int(request.POST.get('item_price'))
+payment_method = request.POST.get('payment_method', 'Orange Money')
+ref_command = f"ORDER_{request.user.id}_{int(time.time())}"
+custom_field = {
+'user_id': request.user.id,
+'email': request.user.email,
+'order_type': 'product_purchase'
+}
+# Utiliser la nouvelle méthode avec autofill
+response = PaytechService.request_payment(
+item_name=item_name,
+item_price=item_price,
+ref_command=ref_command,
+custom_field=custom_field,
+payment_method=payment_method,
+user=request.user # Objet User Django avec phone_number, first_name, last_name
+)
+if response.get('success') == 1:
+# L'URL contient déjà les paramètres d'autofill si applicable
+return redirect(response['redirect_url'])
+else:
+return render(request, 'payment_error.html', {
+'error': response.get('message', 'Erreur lors de la création du paiement')
+})
+return render(request, 'payment_form.html')
+# Exemple d'utilisation avec différentes méthodes
+def quick_payment_orange(request):
+"""Paiement rapide avec Orange Money et autofill"""
+response = PaytechService.request_payment(
+item_name="Recharge téléphone",
+item_price=5000,
+ref_command=f"RECHARGE_{request.user.id}_{int(time.time())}",
+custom_field={'type': 'recharge'},
+payment_method="Orange Money", # Méthode unique = autofill activé
+user=request.user
+)
+if response.get('success') == 1:
+return redirect(response['redirect_url'])
+else:
+return JsonResponse({'error': response.get('message')})
+def multi_payment_options(request):
+"""Paiement avec plusieurs options (pas d'autofill)"""
+response = PaytechService.request_payment(
+item_name="Abonnement Premium",
+item_price=15000,
+ref_command=f"PREMIUM_{request.user.id}_{int(time.time())}",
+custom_field={'type': 'subscription'},
+payment_method="Orange Money, Wave, Free Money", # Plusieurs méthodes
+user=request.user
+)
+if response.get('success') == 1:
+return redirect(response['redirect_url'])
+else:
+return JsonResponse({'error': response.get('message')})
+@csrf_exempt
+@require_POST
+def payment_ipn(request):
+if PaytechService.verify_ipn(request):
+type_event = request.POST.get('type_event')
+custom_field = json.loads(request.POST.get('custom_field', '{}'))
+ref_command = request.POST.get('ref_command')
+amount = request.POST.get('item_price')
+payment_method = request.POST.get('payment_method')
+if type_event == 'sale_complete':
+# Traiter le paiement réussi
+user_id = custom_field.get('user_id')
+# Mettre à jour la commande, envoyer email, etc.
+elif type_event == 'sale_canceled':
+# Traiter l'annulation
+pass
+return HttpResponse('IPN OK', status=200)
+return HttpResponse('IPN KO', status=403)
+URLs
+# urls.py
+from django.urls import path
+from . import views
+urlpatterns = [
+path('payment/create/', views.create_payment, name='payment_create'),
+path('payment/ipn/', views.payment_ipn, name='payment_ipn'),
+path('payment/success/', views.payment_success, name='payment_success'),
+path('payment/cancel/', views.payment_cancel, name='payment_cancel'),
+]
+Template de paiement
+<!-- templates/payment_form.html -->
+<form method="post" action="{% url 'payment_create' %}">
+{% csrf_token %}
+<div class="form-group">
+<label for="item_name">Produit</label>
+<input type="text" name="item_name" class="form-control" required>
+</div>
+<div class="form-group">
+<label for="item_price">Prix (FCFA)</label>
+<input type="number" name="item_price" class="form-control" required>
+</div>
+<button type="submit" class="btn btn-primary">
+Payer avec PayTech
+</button>
+</form>
+Notifications de paiement (IPN)
+Les IPN (Instant Payment Notifications) vous permettent de recevoir des notifications en temps réel sur l'état des paiements.
+Fonctionnement
+Un client effectue ou annule un paiement
+PayTech envoie une notification POST à votre URL IPN
+Votre serveur vérifie l'authenticité de la requête
+Vous traitez la notification et mettez à jour votre système
+Méthodes de vérification de sécurité
+PayTech propose deux méthodes pour vérifier l'authenticité des notifications IPN :
+Choix de sécurité
+Vous pouvez utiliser soit la vérification par HMAC-SHA256 (recommandée) soit par hachage SHA256 des clés API.
+Méthode 1: Vérification HMAC-SHA256 (Recommandée)
+PayTech inclut un champ hmac_compute dans chaque notification. Cette méthode offre une sécurité renforcée.
+Calcul HMAC pour les paiements :
+// Message: amount|ref_command|api_key
+const message = `${item_price}|${ref_command}|${api_key}`;
+const hmac = crypto.createHmac('sha256', api_secret);
+hmac.update(message);
+const expectedHmac = hmac.digest('hex');
+Calcul HMAC pour les transfers :
+// Message: amount|id_transfer|api_key
+const message = `${amount}|${id_transfer}|${api_key}`;
+const hmac = crypto.createHmac('sha256', api_secret);
+hmac.update(message);
+const expectedHmac = hmac.digest('hex');
+Méthode 2: Vérification SHA256 (Classique)
+Vérification par comparaison des hachages SHA256 des clés API.
+const crypto = require('crypto');
+function verifySHA256(api_key, api_secret, receivedKeyHash, receivedSecretHash) {
+const expectedKeyHash = crypto.createHash('sha256').update(api_key).digest('hex');
+const expectedSecretHash = crypto.createHash('sha256').update(api_secret).digest('hex');
+return expectedKeyHash === receivedKeyHash && expectedSecretHash === receivedSecretHash;
+}
+Paramètres de notification
+Paramètre
+Description
+type_event
+Type d'événement : 'sale_complete' ou 'sale_canceled'
+client_phone
+Numéro de téléphone du client
+payment_method
+Méthode utilisée (Carte Bancaire, Orange Money, etc.)
+item_name
+Nom du produit
+item_price
+Prix de la commande
+ref_command
+Référence de la commande
+token
+Token de paiement
+api_key_sha256
+Clé API hachée en SHA256
+api_secret_sha256
+Clé secrète hachée en SHA256
+Exemples d'implémentation IPN
+Types de notifications IPN
+PayTech envoie différents types de notifications selon les événements :
+Type d'événement
+Description
+URL de notification
+sale_complete
+Paiement réussi
+ipn_url (paramètre de la demande de paiement)
+sale_canceled
+Paiement annulé
+ipn_url (paramètre de la demande de paiement)
+transfer_success
+Transfer réussi
+callback_url (paramètre du transfer)
+transfer_failed
+Transfer échoué
+callback_url (paramètre du transfer)
+refund_complete
+Remboursement effectué
+refund_notif_url (paramètre de la demande de paiement)
+Exemples de notifications IPN
+Notification de paiement réussi (Structure complète)
+{
+"type_event": "sale_complete",
+"custom_field": "c29tZV9zZXJpYWxpemVkX3N0cmluZ19kYXRh", // Encodé en Base64
+"ref_command": "5e4e4f297fa21",
+"item_name": "Paper Cup",
+// Prix pour compatibilité API
+"item_price": 55000,
+"item_price_xof": 55000,
+// Prix détaillés
+"initial_item_price": 60000, // Prix initial avant promotions
+"initial_item_price_xof": 60000,
+"final_item_price": 55000, // Prix final après promotions
+"final_item_price_xof": 55000,
+// Informations promotion
+"promo_enabled": true,
+"promo_value_percent": 8.33, // 8.33% de réduction
+"currency": "XOF",
+"command_name": "Paiement Paper Cup Gold via Paytech",
+"token": "4fe7bb6bedbd94689e89",
+"env": "prod",
+"payment_method": "Orange Money",
+"client_phone": "221772457199",
+// Vérification de sécurité
+"api_key_sha256": "dacbde6382f4bf6ecf4dcec0624712abec1c02b7e5514dad23fdf1242c70d9b5",
+"api_secret_sha256": "91b1ae073d5edd8f3d71ac2fb88c90018c70c9b30993513de15b1757958ab0d3",
+"hmac_compute": "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456"
+}
+Notification de transfer réussi (Structure complète)
+{
+"type_event": "transfer_success",
+"custom_field": "", // Encodé en Base64
+"created_at": "2024-03-28T02:08:40.000Z",
+"external_id": "UALI2QV4WGSULNQ8",
+"callback_url": "https://votre-site.com/transfer-callback",
+"token_transfer": "J70WHGCSLV37738Z",
+"id_transfer": "PYT-DEPOT-2QV4WGSULUALINQ8",
+"amount": 500,
+"amount_xof": 500,
+"service_items_id": "WAVE_SN_API_CASH_IN",
+"service_name": "Wave Senegal",
+"state": "success",
+"destination_number": "772457199",
+"validate_at": "2024-03-28T03:37:12.000Z",
+"failed_at": null,
+"fee_percent": 1,
+"rejected_at": null,
+// Vérification de sécurité
+"api_key_sha256": "4dad282f4bf6ecf4dcec3c70d9b5dacbde6fdf124230624712abec1c02b7e551",
+"api_secret_sha256": "b175778c90018c70c9b30993591b1ae0dd8f3d71ac2fb813de153d5e958ab0d3",
+"hmac_compute": "b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456ab"
+}
+Notification de transfer échoué
+{
+"type_event": "transfer_failed",
+"api_key_sha256": "4bf6ecf4dc1c02b7e5514dad282f42c70d9b5",
+"api_secret_sha256": "153d5edd8f3d71ac2fb8b1757958ab91b1ae078c90018c70c9b30993513de0d3",
+"created_at": "2024-03-28T02:08:40.000Z",
+"external_id": "UALI2QV4WGSULNQ8",
+"token_transfer": null,
+"id_transfer": "PYT-DEPOT-2QV4WGSULUALINQ8",
+"amount": 500,
+"amount_xof": 500,
+"service_items_id": "WAVE_SN_API_CASH_IN",
+"service_name": "Wave Senegal",
+"state": "failed",
+"destination_number": "772457199",
+"validate_at": "2024-03-28T03:37:12.000Z",
+"failed_at": null,
+"fee_percent": 1,
+"rejected_at": "2024-03-28T03:37:43.000Z"
+}
+Notification de remboursement
+{
+"type_event": "refund_complete",
+"custom_field": "{ \"item_id\": 1 }",
+"ref_command": "5e4e4f297fa21",
+"item_name": "Paper Cup",
+"item_price": 55000,
+"currency": "xof",
+"command_name": "Paiement Paper Cup Gold via Paytech",
+"token": "4fe7bb6bedbd94689e89",
+"env": "prod",
+"payment_method": "Orange Money",
+"client_phone": "",
+"api_key_sha256": "bf6ecf4dcec3fdf1242dacbde630624712abec1c02b7e5514dad282f4c70d9b5",
+"api_secret_sha256": "993513de153d5e91b1ae078c90018c70c9b30dd8f3d71ac2fb8b1757958ab0d3"
+}
+const crypto = require('crypto');
+app.post('/ipn', (req, res) => {
+const {
+type_event,
+custom_field,
+ref_command,
+item_name,
+item_price,
+final_item_price,
+promo_enabled,
+promo_value_percent,
+token,
+api_key_sha256,
+api_secret_sha256,
+hmac_compute
+} = req.body;
+const myApiKey = process.env.PAYTECH_API_KEY;
+const myApiSecret = process.env.PAYTECH_API_SECRET;
+// Méthode 1: Vérification HMAC (Recommandée)
+if (hmac_compute) {
+const message = `${final_item_price || item_price}|${ref_command}|${myApiKey}`;
+const expectedHmac = crypto.createHmac('sha256', myApiSecret)
+.update(message)
+.digest('hex');
+if (expectedHmac === hmac_compute) {
+console.log('✅ Notification authentifiée via HMAC');
+processPayment();
+} else {
+console.log('❌ HMAC invalide');
+return res.status(403).send('Forbidden');
+}
+}
+// Méthode 2: Vérification SHA256 (Alternative)
+else {
+const expectedApiKey = crypto.createHash('sha256')
+.update(myApiKey)
+.digest('hex');
+const expectedApiSecret = crypto.createHash('sha256')
+.update(myApiSecret)
+.digest('hex');
+if (expectedApiKey === api_key_sha256 &&
+expectedApiSecret === api_secret_sha256) {
+console.log('✅ Notification authentifiée via SHA256');
+processPayment();
+} else {
+console.log('❌ Clés SHA256 invalides');
+return res.status(403).send('Forbidden');
+}
+}
+function processPayment() {
+// Décoder custom_field depuis Base64
+let customData = {};
+try {
+const decodedCustomField = Buffer.from(custom_field, 'base64').toString('utf-8');
+customData = JSON.parse(decodedCustomField);
+} catch (e) {
+console.log('Custom field non-JSON:', custom_field);
+}
+if (type_event === 'sale_complete') {
+console.log(`💰 Paiement réussi pour ${ref_command}`);
+console.log(`Prix initial: ${item_price}, Prix final: ${final_item_price}`);
+if (promo_enabled) {
+console.log(`🎉 Promotion appliquée: ${promo_value_percent}%`);
+}
+// Mettre à jour votre base de données
+updateOrderStatus(ref_command, 'paid', {
+finalPrice: final_item_price,
+promoApplied: promo_enabled,
+customData: customData
+});
+// Envoyer email de confirmation
+sendConfirmationEmail(customData.email || customData.user_id);
+} else if (type_event === 'sale_canceled') {
+console.log(`❌ Paiement annulé pour ${ref_command}`);
+updateOrderStatus(ref_command, 'canceled');
+}
+res.status(200).send('OK');
+}
+});
+<?php
+// Récupérer les données POST
+$type_event = $_POST['type_event'] ?? '';
+$custom_field = $_POST['custom_field'] ?? '';
+$ref_command = $_POST['ref_command'] ?? '';
+$item_name = $_POST['item_name'] ?? '';
+$item_price = $_POST['item_price'] ?? '';
+$final_item_price = $_POST['final_item_price'] ?? $item_price;
+$promo_enabled = $_POST['promo_enabled'] ?? false;
+$promo_value_percent = $_POST['promo_value_percent'] ?? 0;
+$token = $_POST['token'] ?? '';
+$api_key_sha256 = $_POST['api_key_sha256'] ?? '';
+$api_secret_sha256 = $_POST['api_secret_sha256'] ?? '';
+$hmac_compute = $_POST['hmac_compute'] ?? '';
+$my_api_key = $_ENV['PAYTECH_API_KEY'];
+$my_api_secret = $_ENV['PAYTECH_API_SECRET'];
+// Méthode 1: Vérification HMAC (Recommandée)
+if (!empty($hmac_compute)) {
+$message = $final_item_price . '|' . $ref_command . '|' . $my_api_key;
+$expected_hmac = hash_hmac('sha256', $message, $my_api_secret);
+if (hash_equals($expected_hmac, $hmac_compute)) {
+error_log("✅ Notification authentifiée via HMAC");
+processPayment();
+} else {
+error_log("❌ HMAC invalide");
+http_response_code(403);
+echo "Forbidden";
+exit;
+}
+}
+// Méthode 2: Vérification SHA256 (Alternative)
+else {
+if (hash('sha256', $my_api_key) === $api_key_sha256 &&
+hash('sha256', $my_api_secret) === $api_secret_sha256) {
+error_log("✅ Notification authentifiée via SHA256");
+processPayment();
+} else {
+error_log("❌ Clés SHA256 invalides");
+http_response_code(403);
+echo "Forbidden";
+exit;
+}
+}
+function processPayment() {
+global $type_event, $custom_field, $ref_command, $item_price,
+$final_item_price, $promo_enabled, $promo_value_percent;
+// Décoder custom_field depuis Base64
+$custom_data = [];
+try {
+$decoded_custom_field = base64_decode($custom_field);
+$custom_data = json_decode($decoded_custom_field, true) ?? [];
+} catch (Exception $e) {
+error_log("Custom field non-JSON: " . $custom_field);
+}
+if ($type_event === 'sale_complete') {
+error_log("💰 Paiement réussi pour $ref_command");
+error_log("Prix initial: $item_price, Prix final: $final_item_price");
+if ($promo_enabled) {
+error_log("🎉 Promotion appliquée: {$promo_value_percent}%");
+}
+// Mettre à jour la base de données
+$pdo = new PDO(/* vos paramètres DB */);
+$stmt = $pdo->prepare("
+UPDATE orders
+SET status = 'paid',
+final_price = ?,
+promo_applied = ?,
+updated_at = NOW()
+WHERE ref_command = ?
+");
+$stmt->execute([$final_item_price, $promo_enabled ? 1 : 0, $ref_command]);
+// Envoyer email de confirmation si email présent
+if (isset($custom_data['email'])) {
+sendConfirmationEmail($custom_data['email'], $ref_command);
+}
+} elseif ($type_event === 'sale_canceled') {
+error_log("❌ Paiement annulé pour $ref_command");
+$pdo = new PDO(/* vos paramètres DB */);
+$stmt = $pdo->prepare("UPDATE orders SET status = 'canceled' WHERE ref_command = ?");
+$stmt->execute([$ref_command]);
+}
+http_response_code(200);
+echo "OK";
+}
+?>
+import hashlib
+from flask import Flask, request, jsonify
+app = Flask(__name__)
+@app.route('/ipn', methods=['POST'])
+def handle_ipn():
+data = request.form
+# Récupérer les paramètres
+type_event = data.get('type_event')
+custom_field = json.loads(data.get('custom_field', '{}'))
+ref_command = data.get('ref_command')
+api_key_sha256 = data.get('api_key_sha256')
+api_secret_sha256 = data.get('api_secret_sha256')
+# Vérifier l'authenticité
+my_api_key = os.environ.get('PAYTECH_API_KEY')
+my_api_secret = os.environ.get('PAYTECH_API_SECRET')
+expected_key = hashlib.sha256(my_api_key.encode()).hexdigest()
+expected_secret = hashlib.sha256(my_api_secret.encode()).hexdigest()
+if expected_key == api_key_sha256 and expected_secret == api_secret_sha256:
+# Notification authentique
+if type_event == 'sale_complete':
+# Traiter le paiement réussi
+print(f"Paiement réussi: {ref_command}")
+# Mettre à jour la base de données
+elif type_event == 'sale_canceled':
+# Traiter l'annulation
+print(f"Paiement annulé: {ref_command}")
+return 'OK', 200
+else:
+return 'Forbidden', 403
+Sommaire
+/ Recherche
+? Aide clavier
+t Thème
+h Accueil

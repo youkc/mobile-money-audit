@@ -1,0 +1,816 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Initiate a payment for a merchant
+This API endpoint is used to collect payment with mobile money or credit card. The payment can be an invoice,
+a payment link or any other type of collect. The request body is defined by the type of collect.
+For example, to collect an invoice, just invoiceId is required in the request body.
+# OpenAPI definition
+```json
+{
+"openapi": "3.0.3",
+"info": {
+"title": "Pay",
+"description": "Bictorys Charges API allows to trigger payment on credit card, debit card, mobile money and tokenize card.",
+"version": "1.0.0",
+"x-bictorys-api-type": "public",
+"x-bictorys-api-product": "payment"
+},
+"servers": [
+{
+"url": "https://api.test.bictorys.com/pay/v1",
+"description": "Test Environment"
+}
+],
+"security": [
+{
+"ApiKeyAuth": []
+}
+],
+"tags": [
+{
+"name": "Checkout",
+"description": "API endpoints to initiate a checkout"
+}
+],
+"paths": {
+"/charges": {
+"post": {
+"tags": [
+"Checkout"
+],
+"summary": "Initiate a payment for a merchant",
+"description": "This API endpoint is used to collect payment with mobile money or credit card. The payment can be an invoice,\na payment link or any other type of collect. The request body is defined by the type of collect.\nFor example, to collect an invoice, just invoiceId is required in the request body.\n",
+"operationId": "createCharge",
+"parameters": [
+{
+"name": "payment_type",
+"in": "query",
+"description": "Optional. The type of payment method to use. E.g card, mtn_money, orange_money, free_money. If the type is not provided,\nthe customer will be redirected to Bictorys checkout page\n",
+"schema": {
+"type": "string",
+"enum": [
+"wave_money",
+"orange_money",
+"maxit",
+"mtn_money",
+"free_money",
+"moov",
+"mobicash",
+"togocell",
+"bictorys",
+"card"
+]
+},
+"example": "wave_money",
+"required": false
+},
+{
+"name": "X-Amzn-Trace-Id",
+"in": "header",
+"description": "HTTP request identifier allow to trace individual request sent from client to service.\n",
+"schema": {
+"type": "string"
+},
+"required": false,
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+}
+],
+"requestBody": {
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/PaymentObjectRequest"
+}
+}
+},
+"required": true
+},
+"responses": {
+"201": {
+"description": "The payment transaction is initiated. The body response content a confirmation link. Waiting for customer to accept\nthe payment\n",
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/ConfirmationLinkObject"
+}
+}
+}
+},
+"202": {
+"description": "The payment request is accepted. The body response content a charge or payment link. Customer is invited to add\n payment details on the checkout page\n",
+"content": {
+"application/json": {
+"schema": {
+"$ref": "#/components/schemas/CheckoutLinkObject"
+}
+}
+}
+},
+"400": {
+"description": "Bad Request",
+"content": {
+"application/problem+json": {
+"schema": {
+"$ref": "#/components/schemas/BadRequestError"
+}
+}
+}
+},
+"401": {
+"description": "The caller is unauthenticated"
+},
+"403": {
+"description": "Access rights not sufficient"
+},
+"500": {
+"description": "Internal Server Error.",
+"content": {
+"application/problem+json": {
+"schema": {
+"$ref": "#/components/schemas/InternalServerError"
+}
+}
+}
+}
+}
+}
+}
+},
+"components": {
+"schemas": {
+"ConfirmationLinkObject": {
+"type": "object",
+"description": "Provide instructions to the customer to finalize the payment",
+"properties": {
+"transactionId": {
+"description": "Unique Id of the initiated transaction",
+"type": "string",
+"format": "uuid",
+"example": "abd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"redirectUrl": {
+"description": "Customer is redirected to this link after is completed",
+"type": "string",
+"example": "https://example.com/home.html"
+},
+"merchantReference": {
+"description": "reference passed by client in the request",
+"type": "string",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"type": {
+"$ref": "#/components/schemas/ConfirmationObjectType"
+}
+},
+"oneOf": [
+{
+"properties": {
+"link": {
+"description": "The payment instruction link URL. Redirect User to this link and we'll provide instructions to accept the payment.",
+"type": "string",
+"example": "https://pay.mobilemoney.com/checkouts/v1/confirm?x_ref=abd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"qrCode": {
+"description": "QR code in base64 to be displayed for customer to allow payment by qrCode. If QrCode is not supported, this field will not be in the response payload",
+"type": "string",
+"example": "iVBORw0KGgoAAAANSUhEUgAAAMgAAADIAQAAAACFI5MzAAABcElEQVR4Xu2WsXLEIAxE5YrP4E/B/CmfQYWyuxBPcjOXIg0qTuPzYD2KZYXgzN+FvSae+JC/yTDE5d684z2T30zkGCRDYhuAvSTKbfiNKOS23MSxgsKxXaGI94pBouRwRF8/30GIUykTBVtQwpkMQdQlJPt56Z+TZIVKjVzVIhgRCIxELvlc2h2cs0IQR3k76ozenTBy8Jih9hiEMpm2iimJj23VpwkEOu2073ujPF4HIFPVvlOv9FJXh9HR82S7iDuWpNBXRQTCzuhQakv1Gu/1nCYMGrkJDeYiQhCVl3tQORDMnEEIg1uvQbhZXdaOx9GjBC8eMKY9yFJXqN774DRx9m7RdYFBZdOEISoy20LtUukrBh6CrBhWpH1Nufd6ThNtwGug1OD7D9RMWs95kpFqu+aU7OzpKORWeZv6WIt4VMcgg6ai4BcdxQkdiXiH2rprjlk5CMHHL9U4+bbq4wRyKbPpmKmSHIW8iw/5H/kCX34lmUXkLmkAAAAASUVORK5CYII="
+},
+"message": {
+"description": "instruction message to be displayed if link and qrCode field are missing or if you prefer do not redirect user to link url. This field can be omitted.",
+"type": "string",
+"example": "you will receive a sms with instructions to accept payment."
+}
+}
+},
+{
+"properties": {
+"state": {
+"$ref": "#/components/schemas/Enum3DSState"
+},
+"3ds": {
+"$ref": "#/components/schemas/ACS3DSObject"
+},
+"3ds2": {
+"$ref": "#/components/schemas/ACS3DS2Challenge"
+}
+}
+}
+]
+},
+"ConfirmationObjectType": {
+"description": "type of link object",
+"type": "string",
+"enum": [
+"MobilePaymentObject",
+"CardPaymentObject"
+],
+"example": "MobilePaymentObject"
+},
+"PaymentObjectRequest": {
+"type": "object",
+"description": "The requestBody is one of the following chargeObject or invoiceId or paymentLinkId or orderId and common fields",
+"oneOf": [
+{
+"properties": {
+"amount": {
+"description": "Optional. Amount to be charged.",
+"type": "number",
+"format": "double",
+"example": 10000
+},
+"currency": {
+"description": "Optional. The currency to charge the customer. Required only if amount above is set.",
+"type": "string",
+"example": "XOF"
+},
+"orderDetails": {
+"description": "list of purchased items",
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/ItemObject"
+}
+},
+"paymentReference": {
+"description": "Optional. Payment reference to be shown on payment page.",
+"type": "string",
+"example": "yourOrder_CF34509"
+},
+"deviceId": {
+"description": "The identifier of the device used to make the payment",
+"type": "string",
+"example": "SN-4562345"
+},
+"customerId": {
+"description": "Optional. Unique Id of the customer. If provided, customerObject object below will be ignored.",
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"customerObject": {
+"description": "Optional. Customer information. If you have not created the customer representation in the system, you can provided using this object.",
+"$ref": "#/components/schemas/CustomerObject"
+}
+}
+},
+{
+"properties": {
+"invoiceId": {
+"description": "Optional. Unique identifier of the invoice to pay.",
+"type": "string",
+"pattern": "\\d{24}$",
+"example": "638d4133957e3caf63e6b79c"
+}
+}
+},
+{
+"properties": {
+"paymentLinkId": {
+"description": "unique identifier of the link payment.",
+"type": "string",
+"format": "uuid",
+"example": "acd2053b-638d-4133-957e-3caf63e6b79c"
+}
+}
+},
+{
+"properties": {
+"orderId": {
+"description": "Optional. Unique identifier of the order to pay.",
+"type": "string",
+"pattern": "\\d{24}$",
+"example": "638d4133957e3caf63e6b79c"
+}
+}
+}
+],
+"properties": {
+"country": {
+"description": "Recommended. The country where the payment should be processed. For card payment, it's the country where the merchant entity is registered. For mobile Money, it's the country of the customer. If not provided, the country of the merchant is used.",
+"type": "string",
+"example": "SN"
+},
+"cardObject": {
+"description": "Optional. Card information. Provide it when you set the payment_type to card",
+"$ref": "#/components/schemas/CardObject"
+},
+"tokenizedCardObject": {
+"description": "Optional. Card information. Provide it when you set the payment_type to tokenized_card",
+"$ref": "#/components/schemas/TokenizedCardObject"
+},
+"authorization": {
+"description": "request approval from card issuer to reserve an amount on the holder card to pay later the transaction. When set to true, an authorization request will be send to card issuer. If ignored or set to false, holder card will be charged immediately",
+"type": "boolean",
+"example": true
+},
+"merchantReference": {
+"description": "Optional. any reference passed by the caller. It will be returned in the response and webhook payload.",
+"type": "string",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"successRedirectUrl": {
+"description": "Optional. User-agent will be redirected to this url after payment is successfully done",
+"type": "string",
+"example": "https://example.com?status=success"
+},
+"errorRedirectUrl": {
+"description": "Optional. User-agent will be redirected to this url after payment is failed or cancelled. The same url can be used for both succeed and failed transaction",
+"type": "string",
+"example": "https://example.com?status=fails"
+},
+"allowUpdateCustomer": {
+"description": "Optional. In the case of checkout or iframe integration, the customer can update phone number or other details, this information are used or the payment. By default, customer profile is not created or updated in this request. If you want that we update customer profile, set allow_update_customer to true. However we recommend to create customer using customer before using charge API",
+"type": "boolean",
+"default": false,
+"example": false
+}
+}
+},
+"CustomerObject": {
+"type": "object",
+"properties": {
+"id": {
+"description": "unique uuid of the customer",
+"readOnly": true,
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"name": {
+"description": "customer's full name",
+"type": "string",
+"example": "John Dao"
+},
+"phone": {
+"description": "customer's mobile phone number.",
+"type": "string",
+"example": 22505234567890
+},
+"email": {
+"description": "the email of the customer",
+"type": "string",
+"example": "john.dao@example.com"
+},
+"address": {
+"description": "Full street address, which MAY include house number, street name, Post Office Box, etc",
+"type": "string",
+"example": "23, avenue de la liberté"
+},
+"city": {
+"description": "City or locality component.",
+"type": "string",
+"example": "Dakar"
+},
+"postalCode": {
+"description": "Zip code or postal code component.",
+"type": "string",
+"example": 0
+},
+"country": {
+"description": "ISO3166-1 alpha-2 two letter, uppercase.",
+"type": "string",
+"example": "SN"
+},
+"locale": {
+"description": "User locale, language is lower case. Country in upper case",
+"type": "string",
+"default": "en-US",
+"example": "fr-FR"
+},
+"createdAt": {
+"description": "The date time that record was created in our system.",
+"type": "string",
+"readOnly": true,
+"example": "2022-06-20T17:17:11Z"
+},
+"updatedAt": {
+"description": "The date time that record was updated in our system.",
+"type": "string",
+"readOnly": true,
+"example": "2022-06-20T17:17:11Z"
+}
+},
+"required": [
+"country"
+]
+},
+"CardObject": {
+"type": "object",
+"properties": {
+"holderName": {
+"description": "Full name of card holder as mentioned on the card",
+"type": "string",
+"example": "John Dao"
+},
+"number": {
+"description": "Card Number",
+"type": "string",
+"example": "4444 1234 1234 1234"
+},
+"expMonth": {
+"description": "expiration month of the card",
+"type": "integer",
+"example": 7
+},
+"expYear": {
+"description": "expiration year of the card",
+"type": "integer",
+"example": 2026
+},
+"cvv": {
+"description": "card verification value.",
+"type": "integer",
+"example": 123
+},
+"browserInfo": {
+"$ref": "#/components/schemas/BrowserInfo"
+}
+}
+},
+"BrowserInfo": {
+"description": "user-agent info used by customer to initiate card payment",
+"type": "object",
+"properties": {
+"browserAcceptHeader": {
+"description": "accepted header",
+"type": "string",
+"example": "application/json"
+},
+"browserJavaEnabled": {
+"description": "Java enabled",
+"type": "boolean",
+"example": true
+},
+"browserLanguage": {
+"description": "browser language",
+"type": "string",
+"example": "en"
+},
+"browserTZ": {
+"description": "browser time zone",
+"type": "string",
+"example": "0"
+},
+"browserUserAgent": {
+"description": "user-agent",
+"type": "string",
+"example": "enMozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.93 Safari/537.36"
+},
+"browserColorDepth": {
+"description": "browser color depth",
+"type": "string",
+"example": "30"
+},
+"browserScreenHeight": {
+"description": "browser Screen Height",
+"type": "string",
+"example": "1055"
+},
+"browserScreenWidth": {
+"description": "browser Screen Width",
+"type": "string",
+"example": "1680"
+},
+"browserJavascriptEnabled": {
+"description": "Is javascript enabled",
+"type": "boolean",
+"example": true
+},
+"browserIP": {
+"description": "browser IP address",
+"type": "string",
+"example": "192.168.1.1"
+},
+"challengeWindowSize": {
+"description": "challengeWindowSize",
+"type": "string",
+"example": "05"
+}
+}
+},
+"ACS3DS2Challenge": {
+"description": "3DS2 block to initiate the challenge flow. If state is AWAIT_3DS, then from an iframe or a new tab POST creq value to acsURL using form url encoded ( Content-Type set to application/x-www-form-urlencoded) Therefore the ACS issuer will display challenge page and complete verification with card hold. The result is sent back to Bictorys payment gateway. Finally Bictorys will redirect to pay.bictorys/card/transactions?status{transactionStatus}. You can intercept the result when shopper clicks on close button.",
+"type": "object",
+"properties": {
+"acsURL": {
+"description": "The URL of the issuer’s challenge page",
+"type": "string",
+"example": "The URL to POST any relevant EMV data to, along with the redirection of your shopper's browser"
+},
+"creq": {
+"description": "A Base64 encoded form of the CReq payload",
+"type": "string",
+"example": "eyJ0cmFuc1N0YXR1cyI6IkMiLCJ0aHJlZURTU2VydmVyVHJhbnNJRCI6IjZiZDMxODQ3LTlkN2QtNGMxMi1iZDhjLWE0OTQzYTU4 NWFkMyIsIm1lc3NhZ2VWZXJzaW9uIjoiMi4xLjAiLCJjaGFsbGVuZ2VDb21wbGV0aW9uSW5kIjoiMDEiLCJtZXNzYWdlVHlwZSI6IjAxIiwi YWNzVHJhbnNJRCI6IjRhMmE4MzA4LTAzZDAtNGE5Ni04MTE5LTM0YmU5OWZjYmJmMiJ9"
+}
+}
+},
+"Enum3DSState": {
+"description": "State in the 3DS sequence",
+"type": "string",
+"enum": [
+"AWAIT_3DS",
+"PURCHASED",
+"CAPTURED",
+"AUTHORIZED",
+"FAILED",
+"DECLINED"
+],
+"example": "AWAIT_3DS"
+},
+"ACS3DSObject": {
+"description": "contains objects and url required to perform 3DS1 challenge flow",
+"type": "object",
+"properties": {
+"acsUrl": {
+"description": "The URL of the issuer’s challenge page",
+"type": "string",
+"example": "https://api-gateway-uat.bictorys.com/acs/create"
+},
+"acsPaReq": {
+"description": "value required by the issuer for providing the challenge to your card-holder.",
+"type": "string",
+"example": "AcsPaReq"
+},
+"acsMd": {
+"description": "uest value required by the issuer for providing the challenge to your card-holder.",
+"type": "string",
+"example": "Another value required by the bank issuing your card-holder’s 3-D Secure challenge page"
+},
+"acsTerm": {
+"description": "URL to which the issuer presenting the 3-D Secure challenge will POST the resulting authentication result.",
+"type": "string",
+"example": "https://api.bicortorys.com/card-sn/acs-challenge-response"
+}
+}
+},
+"CheckoutLinkObject": {
+"type": "object",
+"description": "used to build checkout page and allow customer to select payment method and enter required information",
+"properties": {
+"type": {
+"description": "type of link object",
+"type": "string",
+"enum": [
+"CheckoutLinkObject"
+],
+"example": "CheckoutLinkObject"
+},
+"link": {
+"description": "The payment link URL. Redirect User to this link and we'll display our checkout modal to complete the payment.",
+"type": "string",
+"example": "https://pay.bictorys.com/v1/charges/fbd2053b-638d-4133-957e-3caf63e6b79c?op_token=2fEAW4v860oMFIDNs2c1NMHgPq6btk3"
+},
+"chargeId": {
+"description": "Unique Id of the charge Object. used to get or patch charge object in case of iframe integration.",
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"opToken": {
+"description": "operation token will authorize you to get or modify charge object.",
+"type": "string",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+}
+}
+},
+"TokenizedCardObject": {
+"type": "object",
+"description": "Tokenized card Object used to make tokenized charge with /charges endpoint.",
+"properties": {
+"cardId": {
+"description": "card Id returned in the response body by Get \"#/tokenized-cards\".",
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"cvv": {
+"description": "card verification value.",
+"type": "integer",
+"example": 123
+}
+}
+},
+"ItemObject": {
+"type": "object",
+"properties": {
+"id": {
+"description": "unique uuid of the product",
+"readOnly": true,
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"name": {
+"description": "product name. A product can be a service",
+"type": "string",
+"example": "pineapple"
+},
+"reference": {
+"description": "product reference",
+"type": "string",
+"example": "SKU56789002"
+},
+"price": {
+"description": "product unit price",
+"type": "number",
+"format": "double",
+"example": 100
+},
+"quantity": {
+"description": "quantity of this product purchased",
+"type": "number",
+"format": "double",
+"example": 2.5
+},
+"discount": {
+"description": "discount percentage applied to product price and tax rate",
+"type": "number",
+"format": "double",
+"default": 0,
+"example": 20
+},
+"taxRate": {
+"description": "tax rate in percentage added to product price",
+"type": "number",
+"format": "double",
+"default": 0,
+"example": 5.5
+},
+"totalPrice": {
+"description": "total price including discount and tax",
+"type": "number",
+"format": "double",
+"default": 0,
+"readOnly": true,
+"example": 125
+}
+}
+},
+"BadRequestError": {
+"type": "object",
+"properties": {
+"status": {
+"description": "http status code",
+"type": "string",
+"example": 400
+},
+"title": {
+"type": "string",
+"example": "Bad request.",
+"default": "Bad request."
+},
+"details": {
+"description": "error details",
+"type": "string",
+"example": "E400-0 card info is missing",
+"enum": [
+"E400-21: representative object is missing",
+"E400-1: merchant name is missing",
+"E400-4: merchant country is missing",
+"E400-2: representative email is missing",
+"E400-1: representative name is missing",
+"E400-0: representative address is missing",
+"E400-0: Unexpected Error",
+"E400-6: Amount is missing",
+"E400-10: Invalid Country format",
+"E400-12: Currency is missing",
+"E400-13: PaymentType is missing",
+"E400-0: NotificationDict is missing",
+"E400-0: Notification value is missing",
+"E400-0: SettingDict is missing",
+"E400-0: Setting value is missing or not allowed",
+"E400-18: IBAN is missing",
+"E400-19: beneficiaryName is missing",
+"E400-0: Header media-type is missing",
+"E400-0: Header Content-Type is missing",
+"E400-22: Unsupported media type. Supported type are pdf, jpeg and png",
+"E400-23: Unsupported media type. use png",
+"E400-16: File size must not exceed 4ko",
+"E400-17: File size must not exceed 1Mo",
+"E400-0: password is missing",
+"E401-1: bearer token or apikey is missing",
+"E401-2: bearer token is missing",
+"E401-4: Cannot delete public key",
+"E400-0: apikey is missing",
+"E403-1: Access right not sufficient",
+"E400-0: Bad id is passed",
+"E400-7: Invalid Name Format",
+"E400-8: Invalid Email Format",
+"E400-9: Invalid phone number Format",
+"E400-3: phone number is required",
+"E400-20: Expired Or Bad OTP or Bad PhoneNumberId",
+"E400-20: Expired Or Bad OTP or Bad MerchantId",
+"E400-20: Expired Or Bad OTP",
+"E403-2: 2FA authentication is required",
+"E409-1 Merchant Representation has already an account",
+"E400-24: Selected Currency is not yet supported for this country",
+"E400-20: Resource is no longer available",
+"E400-25: Payment type is disabled by merchant",
+"E400-0: Bad transactionId is passed",
+"E400-0: Bad transaction type is passed",
+"E400-26: Invoice or Order is paid or expired",
+"E400-27: payment link is paid or expired",
+"E400-0: Missing or Bad search key",
+"E400-28: Money transfer is not authorized for this merchant",
+"E400-0 offline checkout write is missing",
+"E401-1: Invalid Token",
+"E401-3: Invalid apikey",
+"E400-0: type is missing in request body",
+"E400-0: bad or missing scope in request body",
+"E400-0: unknown apikeyId",
+"E400-0: account status is missing",
+"E400-0: merchantId is missing",
+"E400-0: callbackUrl is missing",
+"E400-0: bad type is passed",
+"E400-0: bad cardId is passed",
+"E400-0: bad merchant id is passed",
+"E400-0: unknown or unauthorized permission is passed",
+"E400-0 card info is missing",
+"E400-01: Order name is missing",
+"E400-0: Order id must be in UUID format",
+"E400-0: Same Idempotency is passed",
+"E400-29: product price is missing in a Item line Object",
+"E400-30: product quantity is missing in a Item line Object",
+"E400-31: Due date is required",
+"E400-1: Name is missing",
+"E400-32: Already expired",
+"E404-1: Cannot find resource",
+"E400-33: Wrong payment type or disabled",
+"E400-34: User does not have a secret Code",
+"E400-35: SecretCode is locked, you must reset it",
+"E400-36: Wrong secret code is passed",
+"E400-37: Secret code is missing",
+"E400-38: Insufficient balance",
+"E400-00: country is missing",
+"E400-39: Wrong country is passed",
+"E400-40: Invoice is expired",
+"E400-41: Wrong date format is used",
+"E400-42: Invalid Category format",
+"E400-43: Invalid City format",
+"E400-44:Merchant does not exist",
+"E400-45: Invalid Reference format",
+"E400-46: Invalid paymentReference format",
+"E400-47: Invoice is already paid",
+"E400-48: Payment link already paid",
+"E400-49: Error from PSP, Check your account",
+"E400-50: Amount exceed available capture",
+"E400-51: Wrong secret code is passed",
+"E400-52: You must register you phone number first",
+"E400-53: You don't have a secret code",
+"E400-54: You secret code is locked, do reset",
+"E400-55: Phone number must be in international format",
+"E400-0: redirectUrl must start with https://",
+"E400-0: Payment failed",
+"E401-5: Your Account is restricted",
+"E401-6: Your Account is not activated"
+]
+}
+}
+},
+"InternalServerError": {
+"type": "object",
+"properties": {
+"title": {
+"type": "string",
+"example": "An error has occurred.",
+"default": "An error has occurred."
+},
+"details": {
+"type": "string",
+"example": "An error has occurred.",
+"default": "An error has occurred."
+}
+}
+}
+},
+"securitySchemes": {
+"ApiKeyAuth": {
+"type": "apiKey",
+"in": "header",
+"name": "X-API-Key"
+}
+}
+},
+"x-readme": {
+"explorer-enabled": true,
+"proxy-enabled": true
+},
+"_id": {
+"buffer": {
+"0": 102,
+"1": 30,
+"2": 136,
+"3": 217,
+"4": 30,
+"5": 138,
+"6": 93,
+"7": 0,
+"8": 82,
+"9": 216,
+"10": 237,
+"11": 147
+}
+}
+}
+```

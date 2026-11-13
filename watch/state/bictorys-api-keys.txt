@@ -1,0 +1,79 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Les clés API
+Afin d'établir une communication entre votre application et Bictorys, il est nécessaire de disposer de votre clé secrète. Bictorys utilise la clé secrète de votre compte pour authentifier vos requêtes API.
+> 📘 Note
+>
+> Votre clé secrète doit être traitée comme une information confidentielle, car elle accorde un accès illimité pour effectuer des requêtes API auprès de Bictorys.
+```javascript cURL
+curl --request POST \
+--url 'https://api.test.bictorys.com/pay/v1/charges?payment_type=card' \
+--header 'accept: application/json' \
+--header 'content-type: application/json'
+```
+Si vous oubliez d'inclure votre clé lors de la création d'une requête API ou si vous fournissez une clé incorrecte, Bictorys répondra par un message d'erreur.
+```javascript Cle API invalide
+"message": "Invalid authentication credentials"
+```
+```Text Aucune cle API trouvée
+"message": "No API key found in request"
+```
+# Obtenir vos clés API
+Chaque compte est livré avec trois ensembles de clés API : la clé secrète utilisée pour effectuer des requêtes API, la clé publique qui identifie votre compte auprès de Bictorys, et la clé secrète de webhook qui est utilisée pour valider les webhooks. Toutes les clés API sont disponibles pour les modes Live et Test.
+**Pour obtenir vos clés API, suivez les instructions ci-dessous :**
+## Etape 1
+Connectez-vous à votre tableau de bord Bictorys et accédez à la section Developpeurs dans le menu latéral.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/696297b-Dashboard.png",
+"This is some image...",
+"Dashbord"
+],
+"align": "center"
+}
+]
+}
+[/block]
+## Etape 2
+Sur la page des developpeurs, repérez l'onglet Configuration des clés API et des webhooks. Generez et copiez la clé API souhaitée.
+Les droits nécessaires pour les plugins e-commerce sont : checkoutWr et CustomerWr.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/a044f4a-Developpeurs.png",
+"This is some image...",
+"Alt text"
+],
+"align": "center"
+}
+]
+}
+[/block]
+* **Clé Publique**
+La clé publique est destinée à l'identification de votre compte auprès de Bictorys. Elle doit être utilisée lorsque vous voulez appeler l'API charges charges depuis votre interface frontale ou votre application mobile. La clé privée ne doit en aucun être utilisée pour appeler nos APIs depuis votre application front-end ou application mobile pour des raisons de sécurité.
+* **Clé Privée**
+Il est crucial de maintenir votre clé secrète confidentielle, car elle accorde un accès à vos resources auprès de Bictorys.
+> ❗️ Attention
+>
+> Vous ne pourriez copier votre clé qu'une fois après l'avoir generée.
+[block:image]
+{
+"images": [
+{
+"image": [
+"https://files.readme.io/ca9137a-Screen_Shot_2023-11-07_at_7.42.50_AM.png",
+"This is some image...",
+"Alt text"
+],
+"align": "center"
+}
+]
+}
+[/block]

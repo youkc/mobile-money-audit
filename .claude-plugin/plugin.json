@@ -1,0 +1,26 @@
+{
+  "name": "mobile-money-audit",
+  "displayName": "Mobile Money Audit",
+  "version": "0.1.0",
+  "description": "Read-only pre-production audit of mobile money payment integrations (Bictorys, Wave, PayTech, PayDunya) in Laravel apps, with a GO / NO-GO verdict.",
+  "author": {
+    "name": "youkc",
+    "url": "https://github.com/youkc"
+  },
+  "homepage": "https://github.com/youkc/mobile-money-audit",
+  "repository": "https://github.com/youkc/mobile-money-audit",
+  "license": "MIT",
+  "keywords": [
+    "laravel",
+    "payments",
+    "mobile-money",
+    "xof",
+    "senegal",
+    "wave",
+    "paytech",
+    "paydunya",
+    "bictorys",
+    "security",
+    "audit"
+  ]
+}

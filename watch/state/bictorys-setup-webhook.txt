@@ -1,0 +1,37 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Configurer le webhook
+Configurer le webhook
+La configuration des webhooks est une étape importante pour permettre à votre application de recevoir des notifications en temps réel des événements liés aux transactions ou à d'autres activités pertinentes. Voici comment vous pourriez configurer les webhooks pour Bictorys. Notez que ces étapes peuvent varier en fonction des spécificités de l'API Bictorys.
+### Etape 1 :Créer une URL de Webhook
+* Assurez-vous d'avoir un point de terminaison (URL) sur votre serveur pour recevoir les notifications des webhooks. Cette URL doit être accessible depuis Internet.
+### Etape 2 : Configurer le Webhook dans le Tableau de Bord de Bictorys
+* Connectez-vous à votre compte Bictorys.
+* Cliquez sur le lien **Developpeurs** du menu contextuel à gauche
+[block:image]{"images":[{"image":["https://files.readme.io/7dbd92d-Screenshot_2023-12-10_at_07-56-33_Figma.png","This is some image...","Dashbord"],"align":"center"}]}[/block]
+### Etape 3 : Ajouter un Nouveau Webhook
+* Ajoutez un nouveau webhook en spécifiant l'URL que vous avez créée à l'étape 1.
+* Entrez une clé secrète de webhook (une chaîne de caractères aléatoire) pour sécuriser les appels de votre webhook par Bictorys. Cette clé sera incluse dans l'en-tête de chaque requête webhook afin de vous notifier d'un événement.
+## Exemple de Code pour Gérer les Webhooks (Conceptuel)
+En supposant que vous utilisez un serveur web avec un langage tel que Node.js, vous pourriez avoir un endpoint qui ressemble à ceci :
+```javascript
+const express = require('express');
+const bodyParser = require('body-parser');
+const app = express();
+const port = 3000;
+app.use(bodyParser.json());
+app.post('/webhook-endpoint', (req, res) => {
+// Traitez la notification reçue du webhook
+console.log('Notification reçue :', req.body);
+// Ajoutez ici le code pour traiter l'événement, par exemple, mettre à jour la base de données
+res.status(200).end(); // Répondez au serveur Bictorys pour indiquer que la notification a été reçue avec succès
+});
+app.listen(port, () => {
+console.log(`Serveur d'écoute sur le port ${port}`);
+});
+```
+> 📘 Note
+>
+> N'oubliez pas de sécuriser votre endpoint en utilisant HTTPS et d'ajouter des mécanismes d'authentification si nécessaire pour garantir la sécurité de vos webhooks.

@@ -1,0 +1,468 @@
+HTTP/JSON | PayDunya Developers
+DOCUMENTATION
+Introduction
+Quelle API choisir ?
+Recevoir de l'argent
+API PAR
+Definition
+Android
+HTTP/JSON
+Java
+Magento
+.NET
+NodeJS
+Php
+Prestashop
+Python
+Ruby
+WHMCS
+Wordpress
+API PSR
+Definition
+IOS
+Magento
+Prestashop
+Web Api
+Wordpress
+SoftPay
+Definition
+Sandbox
+API SoftPay
+Envoyer de l'argent
+API PUSH
+Vérification Statut Transaction
+PAIEMENT
+DEBOURSEMENT
+Demander des paiements
+API Demande de paiement
+Support Technique
+Contact
+Consulter le solde
+Balance
+Boutons de paiement
+Nos Boutons Payer
+HTTP/JSON
+Génération de vos clés d'API
+APIs
+Configuration de base
+Etat de paiement
+Lire toutes les sections en bleues pour mieux comprendre la documentation et les sections en orange signifiant l'alerte afin d'éviter des erreurs à commettre durant les intégrations et les procédures détaillées pour les intégration.
+Génération de vos clés d'API
+Les clés d'API sont vos références numériques auprès des systèmes de PayDunya. Nous les utilisons afin
+d'identifier votre compte et les applications que vous allez créer. Ces clés sont nécessaires pour toute
+intégration des APIs de paiements PayDunya. Voici chronologiquement la marche à suivre :
+Vous devez d'abord avoir un compte PayDunya Business activé.
+Créez-en
+un si besoin y est.
+Connectez-vous à votre compte et cliquez
+sur
+Intégrez notre API au niveau
+dumenu à gauche.
+Cliquez sur le bouton
+Configurer une nouvelle application
+et remplissez le
+formulaire.
+Choisissez MODE TEST, JE VEUX FAIRE DES TESTS DE PAIEMENT. puis
+ACTIVER LE MODE DE PRODUCTION .
+APIs
+PayDunya vous propose trois 03 APIs :
+deux 02 APIs de paiement qui vous permettent de vous faire payer PAR et PSR .
+et une troisième PER de redistribution qui vous permet de partager l'argent des paiements
+avec vos
+fournisseurs.
+Vous devez intégrer l'une des APIs de paiement et celle de redistribution si vous desirez partager l'argent des
+paiements avec des partenaires.
+Notre API HTTP est exclusivement basée sur le format d'échange de données JSON . Toutes
+les réponses aux requêtes
+HTTP POST/GET depuis/vers notre API reposent sur des objets JSON , excepté le format de données que nous postons sur le callback url qui est de type HTTP application/x-www-form-urlencoded .
+Tous les objets JSON retournés au niveau d'une réponse contiennent au minimum les nœuds response_code et response_text . Le nœud response_code représente le code technique de la réponse, et le noeud response_text fournit quant à lui des explications sur la réponse. Votre intégration doit fortement s'appuyer sur ces nœuds afin de fonctionner correctement.
+Toutes les réponses de succès renvoient un objet JSON contenant un nœud response_code égal à
+00 .
+PAIEMENT AVEC REDIRECTION
+Le service de "Paiement Avec Redirection" de PayDunya vous permet de rediriger votre client vers
+notre plateforme afin qu'il puisse achever le processus de paiement. Nous vous recommandons d'utiliser l'API de "Paiement Avec Redirection" car elle est la plus adaptée dans 99% des cas. L'avantage principal de cette option est que les clients peuvent choisir de payer à partir d'une variété d'options de paiement disponibles sur notre plateforme. De plus, si une nouvelle option est rajoutée dans le futur, celle-ci apparaitra directement sur la page de paiement sans que vous ayez à modifier quoi que ce soit au niveau de votre code source.
+Endpoints API TEST
+https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create
+Endpoints API PRODUCTION
+https://app.paydunya.com/api/v1/checkout-invoice/create
+Requête POST HTTP
+curl -H "Content-Type: application/json" \
+-H "PAYDUNYA-MASTER-KEY: wQzk9ZwR-Qq9m-0hD0-zpud-je5coGC3FHKW" \
+-H "PAYDUNYA-PRIVATE-KEY: test_private_rMIdJM3PLLhLjyArx9tF3VURAF5" \
+-H "PAYDUNYA-TOKEN: IivOiOxGJuWhc5znlIiK" \
+-X POST -d '{"invoice": {"total_amount": 5000, "description": "Chaussure VANS dernier modèle"},"store": {"name": "Magasin le Choco"}}' \
+"https://app.paydunya.com/sandbox-api/v1/checkout-invoice/create"
+Réponse attendue
+{
+"response_code":"00",
+"response_text":"https://app.paydunya.com/sandbox-checkout/invoice/test_RHICF0HboN",
+"description":"Checkout Invoice Created",
+"token":"test_RHICF0HboN"
+}
+Pour recevoir la structure complète des informations de paiements, vous pouvez faire une requête avec le token reçu dans la réponse ci-dessus. Voir la démarche à suivre au point vérification de l'état du paiement .
+PRE-REMPLISSAGE DE CHAMPS DE LA PAGE DE PAIEMENT
+Vous pouvez faciliter le parcours de paiement de vos clients en pré-remplissant automatiquement les champs Nom complet , Email , et Votre numéro de téléphone .
+Champs à pré-remplir :
+Name : Nom du client.
+Email : Adresse email du client.
+Phone : Numéro de téléphone du client.
+Comment faire :
+Lors de la création du checkout invoice , ajoutez le noeud customer comme noeud enfant du noeud racine invoice avec les informations suivantes :
+{
+"invoice":{
+"customer": {
+"name": "John Doe",
+"email": " [email protected] ",
+"phone": "771111111"
+}
+}
+}
+Les champs sur la page de paiement seront alors automatiquement remplis avec les informations fournies.
+PAIEMENT ET REDISTRIBUTION
+Cette option s'avère très intéressante si vous souhaitez créer votre propre solution de paiement par dessus celle de
+PayDunya ou si vous devez reverser un certain pourcentage à chaque vente. L'argent est reçu sur les comptes
+destinataires et le service n'est pas facturé.
+Vous pouvez transférer des fonds vers d'autres comptes clients PayDunya à partir de votre compte via l'API de
+Paiement Et Redistribution . Pour des raisons de sécurité, vous devez explicitement activer l'option de
+Paiement Et Redistribution dans la configuration de votre intégration/application en vous connectant à votre compte Business PayDunya. Vous pouvez toujours activer ou désactiver le Paiement Et Redistribution en mettant à jour la configuration de votre intégration/application en vous connectant à votre compte Business PayDunya.
+Endpoints API TEST
+https://app.paydunya.com/sandbox-api/v1/direct-pay/credit-account
+Endpoints API PRODUCTION
+https://app.paydunya.com/api/v1/direct-pay/credit-account
+Requête POST HTTP
+curl -H "Content-Type: application/json" \
+-H "PAYDUNYA-MASTER-KEY: wQzk9ZwR-Qq9m-0hD0-zpud-je5coGC3FHKW" \
+-H "PAYDUNYA-PRIVATE-KEY: test_private_rMIdJM3PLLhLjyArx9tF3VURAF5" \
+-H "PAYDUNYA-TOKEN: IivOiOxGJuWhc5znlIiK" \
+-X POST -d ' { "account_alias" : "771111111", "amount" : 4500 }' \
+"https://app.paydunya.com/sandbox-api/v1/direct-pay/credit-account "
+Réponse attendue
+{
+"response_code":"00",
+"response_text":"Transaction completed successfully",
+"description":"Success! Amount of 4500 FCFA has been transfered to Sandbox Account BOUBACAR BAH",
+"transaction_id":"TEST000001"
+}
+Configuration de base des informations à envoyer à paydunya
+1 - Structure JSON complète des données à envoyer
+Voici présentée ci-dessous, la structure complète de l'objet JSON de facturation PayDunya. La plupart des éléments sont optionnels, mais prenez l'habitude de tous les fournir car cela vous offrira beaucoup plus de flexibilité. Les nœuds JSON obligatoires pour la soumission d'une requête HTTP POST de paiement de facture vers nos Endpoints API sont : le nœud racine invoice et son noeud enfant total_amount ainsi que le nœud racine store et son noeud enfant name .
+{
+"invoice": {
+"items": {
+},
+"taxes": {
+},
+"customer": {
+"name": "",
+"email": "",
+"phone": ""
+},
+"channels": ["expresso-sn","mtn-benin"],
+"total_amount": 5000,
+"description": ""
+},
+"store": {
+"name": "Magasin le Choco",
+"tagline": "",
+"postal_address": "",
+"phone": "",
+"logo_url": "",
+"website_url": ""
+},
+"custom_data": {
+},
+"actions": {
+"cancel_url": "",
+"return_url": "",
+"callback_url": ""
+}
+}
+Note
+Lors de la création du checkout invoice , si logo_url est spécifié, il est utilisé pour afficher le logo sur la page de paiement. Sinon, c'est le logo par défaut du compte qui est affiché. En l'absence de tout logo configuré, une icône générique market est utilisée à la place.
+2 - Ajout d'articles ou d'éléments sur la facture PayDunya
+Référez-vous à la structure complète JSON afin de savoir de manière exacte où insérer la structure suivante. Les "items" sont utilisés pour afficher au client sur la page de paiement la liste des articles qu'il a commandé. PayDunya n'utilisera en aucun cas l'un des montants déclarés dans "items" pour facturer le client.
+{
+"items": {
+"item_0": {
+"name": "Chaussures Croco",
+"quantity": 3,
+"unit_price": "10000",
+"total_price": "30000",
+"description": "Chaussures faites en peau de crocrodile authentique qui chasse la pauvreté"
+},
+"item_1": {
+"name": "Chemise Glacée",
+"quantity": 1,
+"unit_price": "5000",
+"total_price": "5000",
+"description": ""
+}
+}
+3 - Ajout de taxes (facultatif)
+Si vous désirez afficher sur la facture PayDunya les taxes que vous appliquez (TVA, Frais de livraison...) vous pouvez le faire en utilisant le noeud JSON taxes comme illustré ci-dessous.
+"taxes": {
+"tax_0": {
+"name": "TVA (18%)",
+"amount": 6300
+},
+"tax_1": {
+"name": "Livraison",
+"amount": 1000
+}
+}
+4 - Restriction des moyens de paiement à afficher (facultatif)
+Par défaut, les moyens de paiement activés au niveau de la configuration de votre intégration seront tous affichés sur la page de paiement pour l'ensemble de vos factures.
+Si toutefois vous souhaitez restreindre la liste des moyens de paiements à afficher sur la page de paiement d'une facture donnée, nous vous offrons la possibilité de le faire en utilisant la clé channels .
+Pour obtenir les noms des opérateurs à attribuer comme valeur à la clé channels, veuillez consulter ce lien qui liste les différents opérateurs disponibles.
+{
+// Ajout d´un seul moyens de paiement
+"channels":"card"
+// Ajout de plusieurs moyens de paiement à la fois
+"channels":["card", "mtn-benin", "orange-money-senegal"]
+}
+5 - Ajout de données personnalisées (facultatif)
+Si vous avez besoin d'ajouter des données supplémentaires (par exemple pour un jeu concours, vous pouvez enregistrer des informations sur chaque gagnant) à des fins d'utilisation ultérieure, nous vous offrons la possibilité de sauvegarder ces données sur nos serveurs et de pouvoir les récupérer une fois le paiement réussi.
+Les données personnalisées ne sont affichées ni sur la page de paiement, ni sur les factures/reçus, ni sur les téléchargements et impressions. Elles sont uniquement récupérées à l'aide de notre action de callback confirm au niveau de l'API.
+Exemple 1
+"custom_data": {
+"categorie": "Jeu concours",
+"periode": "Noël 2015",
+"numero_gagnant": 5,
+"prix" : "Bon de réduction de 50%"
+}
+Exemple 2
+"custom_data": {
+"phone_brand": "Nokia",
+"IMEI": "72892821010728",
+"model": "Luna"
+}
+6 - Configuration d'une URL de redirection après annulation de paiement
+Vous pouvez optionnellement définir une URL sur laquelle seront redirigés vos clients après qu'ils aient cliqué sur le bouton "Annuler le paiement" .
+"actions": {
+"cancel_url": "http://www.magasin-le-choco.com/cancel_url.php"
+}
+7 - Configuration d'une URL de redirection après confirmation de paiements
+Vous pouvez optionnellement définir une URL sur laquelle seront redirigés vos clients après qu'ils aient réussi le paiement de leur commande.
+PayDunya rajoutera ?token=invoice_token à votre URL. Nous expliquons comment utiliser ce token au niveau de la documentation des différents clients API (PHP, Java, .NET, Ruby, Python, Node JS).
+"actions": {
+"return_url": "http://www.magasin-le-choco.com/return_url.php"
+}
+8 - Configuration de l'IPN (Instant Payment Notification)
+Il se peut que pour des raisons x ou y, que la confirmation de paiement ne soit pas instantanée (par exemple le temps que le client tape son code secret sur son téléphone ou le temps de latence du réseau téléphonique), l'IPN vous permet de recevoir instantanément les informations de la transaction pour un paiement confirmé , annulé ou échoué .
+L'IPN correspond à l'URL d'un fichier sur votre serveur sur lequel vous souhaitez recevoir les informations de la transaction de paiement, ces informations sont à traiter en backoffice. PayDunya utilise cette URL afin de vous envoyer instantanément, par requête POST , les informations relatives à la transaction de paiement.
+"actions": {
+"callback_url": "http://www.magasin-le-choco.com/callback_url.php"
+}
+La validation réussie de la transaction de paiement retourne la structure ci-dessous contenant les informations sur le client, l'URL de sa facture PayDunya en version PDF et également un hash permettant de vérifier que les données reçues proviennent bien de nos serveurs.
+Par ailleurs il est capital de comprendre à titre d'information que les paiements annulés ou échoués gardent le même format de reponse sauf la valeur du statut qui change : pour les paiements échoués le statut devient failed et pour les paiements annulés devient cancelled .
+Réponse attendue :
+array (
+'data' =>
+array (
+'response_code' => '00',
+'response_text' => 'Transaction Found',
+'hash' => '8c6666a27fe5daeb76dae6abc7308a557dca5be1bda85dfe5d81fa330cdc0bc3c4b37765fe5d2cc36aa2ba0f9284226a80f5488d14740fa70769d6079a179406',
+'invoice' =>
+array (
+'token' => 'test_jkEdPY8SuG',
+'items' =>
+array (
+'item_0' =>
+array (
+'name' => 'Chaussures Croco',
+'quantity' => '3',
+'unit_price' => '10000',
+'total_price' => '30000',
+'description' => 'Chaussures faites en peau de crocrodile authentique qui chasse la pauvreté',
+),
+'item_1' =>
+array (
+'name' => 'Chemise Glacée',
+'quantity' => '1',
+'unit_price' => '5000',
+'total_price' => '5000',
+'description' => '',
+),
+),
+'taxes' =>
+array (
+'tax_0' =>
+array (
+'name' => 'TVA (18%)',
+'amount' => '6300',
+),
+'tax_1' =>
+array (
+'name' => 'Livraison',
+'amount' => '1000',
+),
+),
+'token': 'test_Jh2T8skw1j',
+'total_amount' => '42300',
+'description' => 'Paiement de 42300 FCFA pour article(s) achetés sur Magasin le Choco',
+),
+'custom_data' =>
+array (
+'categorie' => 'Jeu concours',
+'periode' => 'Noël 2015',
+'numero_gagnant' => '5',
+'prix' => 'Bon de réduction de 50%',
+),
+'actions' =>
+array (
+'cancel_url' => 'http://magasin-le-choco.com/cancel_url.aspx',
+'callback_url' => 'http://magasin-le-choco.com/callback_url.aspx',
+'return_url' => 'http://magasin-le-choco.com/return_url.aspx',
+),
+'mode' => 'test',
+'status' => 'completed',
+'customer' =>
+array (
+'name' => 'Alioune Faye',
+'phone' => '774563209',
+'email' => ' [email protected] ',
+),
+'receipt_url' => 'https://paydunya.com/sandbox-checkout/receipt/pdf/test_jkEdPY8SuG.pdf',
+),
+)
+Le hash renvoyé par PayDunya est le hash de votre MasterKey (clé principale). Ce hash vous permettra de vous assurer que les données que vous avez reçues proviennent de nos serveurs. L'algorithme utilisé pour obtenir le hash est du SHA-512 . Dans la réponse attendue un message d'échec est renseigné dans le noeud fail_reason seulement pour les transactions par carte bancaires échouées ou annulées .
+PayDunya Fait une requête Post de type application/x-www-form-urlencoded sur votre endpoint de callback et poste un tableau de données contenant les informations du paiement. Vous devez utiliser de ce part, la clé "data" avant de récupérer un noeud. La strucutre renvoyée se trouve sous l'index "data" .
+ETAT DE PAIEMENT
+Lors de la création d'une facture avec PayDunya, un token est généré. Ce token est utilisé pour initier le paiement et pour vérifier le statut de la transaction. Le statut d'une transaction peut être PENDING (EN ATTENTE) , CANCELLED (ANNULÉ) ou COMPLETED (COMPLÉTÉ) , selon que le client ait ou non réglé la facture.
+Voici une explication de chaque statut :
+Pending : Ce statut signifie que le paiement est en cours de traitement. Vous pouvez vérifier le statut final de la transaction en utilisant l'API Check Statut . Ce statut peut automatiquement changer après 24h (à la création de la facture) en cancelled si la facture n'a pas été payé.
+Cancelled : Ce statut indique que le paiement a été annulé.
+Completed : Ce statut indique que le paiement a été effectué avec succès.
+Failed : Ce statut indique que le paiement a échoué.
+Rappelez-vous de toujours rajouter la valeur de votre token de facture aux endpoints.
+Endpoints API TEST
+https://app.paydunya.com/sandbox-api/v1/checkout-invoice/confirm/[invoice_token]
+Endpoints API PRODUCTION
+https://app.paydunya.com/api/v1/checkout-invoice/confirm/[invoice_token]
+Requête GET HTTP
+curl -H "Content-Type: application/json" \
+-H "PAYDUNYA-MASTER-KEY: wQzk9ZwR-Qq9m-0hD0-zpud-je5coGC3FHKW" \
+-H "PAYDUNYA-PRIVATE-KEY: test_private_rMIdJM3PLLhLjyArx9tF3VURAF5" \
+-H "PAYDUNYA-TOKEN: IivOiOxGJuWhc5znlIiK" \
+"https://app.paydunya.com/sandbox-api/v1/checkout-invoice/confirm/test_P8FaseSVLd"
+Réponse attendue
+{
+"response_code": "00",
+"response_text": "Transaction Found",
+"hash": "85c6564b0e29c7955633594bc8aca0d007dc1fce3f67bd3accb00ae4e9d39ae528574be9a6ea8bde81fcbb0bc0fae3e56eb1bbedcd4d119a7fd24b0d44ab3770",
+"invoice": {
+"items": {
+"item_0": {
+"name": "Chaussures Croco",
+"quantity": 3,
+"unit_price": "10000",
+"total_price": "30000",
+"description": "Chaussures faites en peau de crocrodile authentique qui chasse la pauvreté"
+},
+"item_1": {
+"name": "Chemise Glacée",
+"quantity": 1,
+"unit_price": "5000",
+"total_price": "5000",
+"description": ""
+}
+},
+"taxes": {
+"tax_0": {
+"name": "TVA (18%)",
+"amount": 6300
+},
+"tax_1": {
+"name": "Livraison",
+"amount": 1000
+}
+},
+"token": "test_Jh2T8skw1j",
+"total_amount": 42300,
+"description": "Paiement de 42300 FCFA pour article(s) achetés sur Magasin le Choco"
+},
+"custom_data": {
+"categorie": "Jeu concours",
+"periode": "Noël 2015",
+"numero_gagnant": 5,
+"prix" : "Bon de réduction de 50%"
+},
+"actions": {
+"cancel_url": "http://magasin-le-choco.com/cancel_url.aspx",
+"callback_url": "http://magasin-le-choco.com/callback_url.aspx",
+"return_url": "http://magasin-le-choco.com/return_url.aspx"
+},
+"mode": "test",
+"status": "completed",
+"fail_reason": "",
+"customer": {
+"name": "Alioune Faye",
+"phone": "774563209",
+"email": " [email protected] "
+},
+"receipt_url": "https://paydunya.com/sandbox-checkout/receipt/pdf/test_Jh2T8skw1j.pdf"
+}
+Le hash renvoyé par PayDunya est le hash de votre MasterKey (clé principale). Ce hash vous permettra de vous assurer que les données que vous avez reçues proviennent de nos serveurs. L'algorithme utilisé pour obtenir le hash est du SHA-512 . Dans la réponse attendue un message d'échec est renseigné dans le noeud fail_reason seulement pour les transactions par carte bancaires échouées ou annulées .
+Pour les entreprises certifiés PCI-DSS, dans la réponse attendue le numéro de carte est renseigné dans le noeud pan .
+Dans la réponse attendue un message et une description de l'échec est renseigné dans le noeud errors seulement pour les transactions par carte bancaires échouées ou annulées .
+Exemple de réponse attendue: Cas d'échec mis en évidence
+{
+"response_code": "00",
+"response_text": "Transaction Found",
+"hash": "85c6564b0e29c7955633594bc8aca0d007dc1fce3f67bd3accb00ae4e9d39ae528574be9a6ea8bde81fcbb0bc0fae3e56eb1bbedcd4d119a7fd24b0d44ab3770",
+"invoice": {
+"items": {
+"item_0": {
+"name": "Chaussures Croco",
+"quantity": 3,
+"unit_price": "10000",
+"total_price": "30000",
+"description": "Chaussures faites en peau de crocrodile authentique qui chasse la pauvreté"
+},
+"item_1": {
+"name": "Chemise Glacée",
+"quantity": 1,
+"unit_price": "5000",
+"total_price": "5000",
+"description": ""
+}
+},
+"taxes": {
+"tax_0": {
+"name": "TVA (18%)",
+"amount": 6300
+},
+"tax_1": {
+"name": "Livraison",
+"amount": 1000
+}
+},
+"token": "test_Jh2T8skw1j",
+"total_amount": 42300,
+"description": "Paiement de 42300 FCFA pour article(s) achetés sur Magasin le Choco"
+},
+"custom_data": {
+"categorie": "Jeu concours",
+"periode": "Noël 2015",
+"numero_gagnant": 5,
+"prix" : "Bon de réduction de 50%"
+},
+"actions": {
+"cancel_url": "http://magasin-le-choco.com/cancel_url.aspx",
+"callback_url": "http://magasin-le-choco.com/callback_url.aspx",
+"return_url": "http://magasin-le-choco.com/return_url.aspx"
+},
+"mode": "live",
+"status": "cancelled",
+"fail_reason": "Payment cancelled by customer",
+"customer": {
+"name": "Alioune Faye",
+"phone": "774563209",
+"email": " [email protected] "
+},
+"errors": {
+"message": "Payment cancelled by customer",
+"description": "Payment cancelled by customer"
+},
+"receipt_url": "https://paydunya.com/sandbox-checkout/receipt/pdf/test_Jh2T8skw1j.pdf"
+}

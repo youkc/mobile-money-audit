@@ -1,0 +1,215 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Comment valider les webhooks
+Les developpeurs peuvent facilement valider les webhooks reçus de la plateforme Bictorys en suivant les étapes suivantes :
+**Verifier le header X-Secret-Key**
+Chaque notification envoyée inclut le header X-Secret-Key qui contient la valeur de la [clé secrete du webhook](https://dashboard.bictorys.com/developer) que vous avez renseignée sur votre dashboard. Vous devez verifier que la clé secrete envoyée correspond à la clé secrete enregistrée sur votre compte Bictorys avant de continuer le traitement.
+**Vérification des Données de la Transaction**
+Il est nécessaire de s'assurer que des éléments clés tels que le montant, la devise (currency), le statut de la transaction, et la référence de paiement le cas échéant sont bien présents et corrects dans la payload (données transmises).
+**Validation de la Commande**
+La commande ne doit être validée que lorsque votre système reçoit un appel de webhook (une notification automatique) confirmant le statut de la transaction. Cela garantit que le paiement a été traité avec succès avant de finaliser la commande.
+```javascript PHP
+/**
+* Example of Process Webhook function.
+*/
+public function process_webhooks() {
+if ( ( strtoupper( $_SERVER['REQUEST_METHOD'] ) !== 'POST' ) ) {
+exit;
+}
+// Read and sanitize the input
+$input = file_get_contents('php://input');
+$sanitized_input = sanitize_text_field($input);
+$event = json_decode($sanitized_input, true);
+// Get all headers
+$headers = getallheaders();
+// Check for the Secret Key header
+$secret_key = isset($headers['X-Secret-Key']) ? $headers['X-Secret-Key'] : '';
+// Verify the secret key
+if ($secret_key !== $this->webhook_secret) {
+return;
+}
+// Validate necessary fields in the event data
+if (!isset($event['status'], $event['paymentReference'])) {
+exit;
+}
+// Convert status to lowercase for comparison
+$status = strtolower($event['status']);
+if ($status !== 'succeeded' && $status !== 'authorized') {
+return;
+}
+// Ensure the event object is in the correct format
+if (!is_array($event) || !isset($event['paymentReference'])) {
+exit;
+}
+// Extract order details from payment reference
+$order_details = explode('_', sanitize_text_field($event['paymentReference']));
+sleep( 10 );
+// Validate order details format
+if (count($order_details) get_meta('merchantReference')) {
+exit;
+}
+*/
+// Respond with a 200 HTTP status code
+http_response_code(200);
+// Check order status and exit if already processed
+$order_status = strtolower($order->get_status());
+if (in_array($order_status, ['processing', 'completed', 'on-hold'], true)) {
+exit;
+}
+// Get currency details
+$order_currency = $order->get_currency();
+$currency_symbol = get_woocommerce_currency_symbol($order_currency);
+$order_total = $order->get_total();
+$amount_paid = floatval($event['amount']);
+$bictorys_ref = sanitize_text_field($event['id']);
+$payment_currency = strtoupper(sanitize_text_field($event['currency']));
+$gateway_symbol = get_woocommerce_currency_symbol($payment_currency);
+// check if the amount paid is equal to the order amount.
+if ( $amount_paid update_status( 'on-hold', '' );
+$order->add_meta_data( '_transaction_id', $bictorys_ref, true );
+/*
+* translators:
+* %1$s: Line break
+* %2$s: Line break
+* %3$s: Line break
+*/
+$notice = sprintf( __( 'Thank you for shopping with us.%1$sYour payment transaction was successful, but the amount paid is not the same as the total order amount.%2$sYour order is currently on hold.%3$sKindly contact us for more information regarding your order and payment status.', 'bictorys-payment-gateway-for-woocommerce' ), '
+', '
+', '
+' );
+$notice_type = 'notice';
+// Add Customer Order Note.
+$order->add_order_note( $notice, 1 );
+in_order_note = sprintf( __( ' Look into this order %1$sThis order is currently on hold.%2$sReason: Amount paid is less than the total order amount.%3$sAmount Paid was %4$s (%5$s) while the total order amount is %6$s (%7$s) %8$s Bictorys Transaction Reference: %9$s', 'bictorys-payment-gateway-for-woocommerce' ), '
+', '
+', '
+', $currency_symbol, $amount_paid, $currency_symbol, $order_total, '
+', $bictorys_ref );
+$order->add_order_note( $admin_order_note );
+function_exists( 'wc_reduce_stock_levels' ) ? wc_reduce_stock_levels( $order_id ) : $order->reduce_order_stock();
+wc_add_notice( $notice, $notice_type );
+WC()->cart->empty_cart();
+} else {
+if ( $payment_currency !== $order_currency ) {
+$order->update_status( 'on-hold', '' );
+$order->update_meta_data( '_transaction_id', $bictorys_ref );
+/*
+* translators:
+* %1$s: Line break
+* %2$s: Line break
+* %3$s: Line break
+*/
+$notice = sprintf( __( 'Thank you for shopping with us.%1$sYour payment was successful, but the payment currency is different from the order currency.%2$sYour order is currently on-hold.%3$sKindly contact us for more information regarding your order and payment status.', 'bictorys-payment-gateway-for-woocommerce' ), '
+', '
+', '
+' );
+$notice_type = 'notice';
+// Add Customer Order Note.
+$order->add_order_note( $notice, 1 );
+$admin_order_note = sprintf( __( ' Look into this order %1$sThis order is currently on hold.%2$sReason: Order currency is different from the payment currency.%3$sOrder Currency is %4$s (%5$s) while the payment currency is %6$s (%7$s) %8$s Bictorys Transaction Reference: %9$s', 'bictorys-payment-gateway-for-woocommerce' ), '
+', '
+', '
+', $order_currency, $currency_symbol, $payment_currency, $gateway_symbol, '
+', $bictorys_ref );
+$order->add_order_note( $admin_order_note );
+function_exists( 'wc_reduce_stock_levels' ) ? wc_reduce_stock_levels( $order_id ) : $order->reduce_order_stock();
+wc_add_notice( $notice, $notice_type );
+} else {
+$order->payment_complete( $bictorys_ref );
+/*
+* translators: %s: Transaction Reference.
+*/
+$order->add_order_note( sprintf( __( 'Payment via Bictorys successful (Transaction Reference: %s)', 'bictorys-payment-gateway-for-woocommerce' ), $bictorys_ref ) );
+WC()->cart->empty_cart();
+if ( $this->is_autocomplete_order_enabled( $order ) ) {
+$order->update_status( 'completed' );
+}
+}
+}
+$order->save();
+exit;
+}
+```
+> 📘 Note
+>
+> L'objet de la payload du webhook est définie dans le sdk client disponible à la demande.
+```javascript Json
+{
+"id": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad",
+// Identifiant unique de la transaction
+"merchantId": "d2d2053b-638d-4133-957e-3caf63e6b79c",
+// Identifiant du marchand
+"subMerchantId": "22e1c83b-7cb0-437b-bc50-a7a58e5660ad",
+// (Optionnel) Identifiant du sous-marchand
+"type": "payment",
+// Type de transaction (payment, refund, etc.)
+"customerId": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad",
+// Identifiant du client (si disponible)
+"customerObject": {
+"name": "John Doe",
+"email": "john@doe.com",
+"phone": "+221770000000",
+"country": "SN",
+"locale": "fr-FR"
+},
+// Informations du client
+"pspName": "card",
+// Moyen de paiement utilisé (card, wave_money, orange_money, etc.)
+"paymentMeans": "+221 *** ** 09",
+// Identifiant partiellement masqué du moyen de paiement
+"paymentChannel": "Online",
+// Canal utilisé (Online ou Terminal)
+"amount": 10,
+// Montant payé par le client (dans la devise 'currency')
+"currency": "EUR",
+// Devise du paiement côté client
+"settledAmount": 6500,
+// Montant reçu par le marchand (après conversion)
+"settledCurrency": "XOF",
+// Devise de règlement du marchand
+"merchantFees": 100,
+// Frais payés par le marchand
+"customerFees": 0,
+// Frais payés par le client
+"transactionFeeAmountHT": 90,
+// Frais hors taxes
+"transactionFeeAmountTax": 10,
+// Taxes sur les frais
+"paymentReference": "ref_123456",
+// Référence passé par l'appelant lors de la création du payment (charges, line de paiement, facture, order). Permet à l'appelant de retrouver la commande payé dans son système.
+"merchantReference": "order_789",
+// Référence fournie par le marchand (optionnelle)
+"cashier": "cashier1@company.com",
+// Identifiant du caissier (optionnel)
+"orderType": "paymentlink",
+// Type de commande (invoice, paymentlink, etc.)
+"orderId": "14e1c83b-7cb0-437b-bc50-a7a58e5660ad",
+// Identifiant de la commande associée
+"orderDetails": [
+{
+"name": "Produit A",
+"quantity": 1,
+"price": 6500
+}
+],
+// Détails des articles achetés
+"status": "succeeded",
+// Statut de la transaction (SUCCEEDED, FAILED, PENDING, etc.)
+"originIp": "192.0.0.1",
+// Adresse IP du client
+"timestamp": "2022-06-20T17:17:11Z"
+// Date de création de la transaction (ISO 8601)
+}
+```
+> ⚠️ **Important**
+>
+> Le format de cet objet peut évoluer dans le futur.\
+> Des champs supplémentaires peuvent être ajoutés sans préavis.
+>
+> Nous recommandons de :
+>
+> * Ne pas faire de validation stricte sur les champs inconnus
+> * Ignorer les propriétés non reconnues côté client
+> * Le champ amount inclut les frai payés par le client si vous avez choisi de faire supporter les frais par le client.

@@ -1,0 +1,64 @@
+name: doc-watch
+
+# Weekly check of the providers' official documentation pages listed in
+# watch/docs.json. No AI call, no automatic merge: when a page changes, the
+# new text is committed to watch/state/ and an issue is opened that mentions
+# the repository owner, who then reviews the reference files by hand.
+
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC (06:00 in Dakar)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: doc-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Self-test
+        run: python3 watch/test_check.py
+
+      - name: Fetch and compare
+        run: python3 watch/check.py "$RUNNER_TEMP/report.md"
+
+      - name: Commit updated state
+        run: |
+          git add watch/state
+          if git diff --cached --quiet; then
+            echo "No state change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "mobile-money-audit doc-watch: update documentation snapshots"
+          git push
+
+      - name: Open issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          report="$RUNNER_TEMP/report.md"
+          [ -f "$report" ] || { echo "Nothing changed."; exit 0; }
+          {
+            echo "@${OWNER} the official documentation of a provider changed (or could not be fetched)."
+            echo
+            echo "To do: read the diff, open the page, and update the matching file in \`skills/mobile-money-audit/references/\` (facts + \`Verified on\` date) if the change matters. You can paste this issue into Claude and ask it to analyse the change."
+            echo
+            cat "$report"
+          } > "$RUNNER_TEMP/body.md"
+          # GitHub caps issue bodies at 65536 characters.
+          head -c 60000 "$RUNNER_TEMP/body.md" > "$RUNNER_TEMP/body-cut.md"
+          gh issue create \
+            --title "mobile-money-audit: provider documentation changed ($(date -u +%Y-%m-%d))" \
+            --body-file "$RUNNER_TEMP/body-cut.md"

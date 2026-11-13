@@ -1,0 +1,23 @@
+{
+  "bictorys": [
+    {"id": "bictorys-validate-webhooks", "url": "https://docs.bictorys.com/docs/how-to-validate-webhooks.md"},
+    {"id": "bictorys-setup-webhook", "url": "https://docs.bictorys.com/docs/setup-webhook.md"},
+    {"id": "bictorys-test-vs-live", "url": "https://docs.bictorys.com/docs/test-vs-live-environment.md"},
+    {"id": "bictorys-api-keys", "url": "https://docs.bictorys.com/docs/get-your-api-key.md"},
+    {"id": "bictorys-ip-allowlist", "url": "https://docs.bictorys.com/docs/getting-your-private-ip-address.md"},
+    {"id": "bictorys-statuses", "url": "https://docs.bictorys.com/docs/status-responses-and-their-meanings.md"},
+    {"id": "bictorys-test-mobile-money", "url": "https://docs.bictorys.com/docs/test-mobile-money.md"},
+    {"id": "bictorys-api-create-charge", "url": "https://docs.bictorys.com/reference/createcharge.md"},
+    {"id": "bictorys-api-transaction-details", "url": "https://docs.bictorys.com/reference/gettransactiondetails.md"}
+  ],
+  "wave": [
+    {"id": "wave-webhook", "url": "https://docs.wave.com/webhook"},
+    {"id": "wave-checkout", "url": "https://docs.wave.com/checkout"}
+  ],
+  "paytech": [
+    {"id": "paytech-doc", "url": "https://docs.intech.sn/doc_paytech.php"}
+  ],
+  "paydunya": [
+    {"id": "paydunya-http-json", "url": "https://developers.paydunya.com/doc/FR/http_json"}
+  ]
+}

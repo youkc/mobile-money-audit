@@ -1,0 +1,1103 @@
+Wave Payout API
+php
+javascript
+java
+ruby
+python
+go
+csharp
+cURL
+Webhooks
+Overview
+How Webhooks Work
+Common Use Cases
+Getting Started
+Setting Up Endpoints
+Endpoint Requirements
+Basic Endpoint Structure
+Webhook Security
+Security Strategy Overview
+Shared Secret
+Signing Secret (Recommended)
+Signature verification implementation:
+Help, the signature validation fails
+Example Wave-Signature validation
+Webhook Registration
+Registration Steps
+Testing Your Webhook
+Using the Business Portal
+Manual Testing Checklist
+Testing with cURL
+Advanced Example
+Full Webhook Example
+Webhook Delivery and Retries
+Event Types
+Checkout Events
+B2B Events
+Merchant Payment Events
+Test Events
+Event Structure
+IP Whitelisting
+Secret Rotation
+Step by step secret rotation
+Webhooks
+Overview
+Webhooks allow Wave to notify your application in real-time when important events occur, such as completed payments, failed transactions or received funds. Instead of repeatedly polling Wave's API for updates, your application receives instant notifications as events happen.
+How Webhooks Work
+You register a webhook URL in your Wave business portal with the events you want to receive
+Wave sends HTTP POST requests to your URL when subscribed events occur
+Your application processes the event and responds with a success status code
+Wave handles retries if your endpoint is temporarily unavailable
+Common Use Cases
+Payment Processing - Get notified immediately when customers complete payments
+Order Fulfillment - Trigger order processing when payment succeeds
+Financial Reconciliation - Automatically update your records when funds are received
+Customer Communication - Send confirmation emails or SMS when transactions complete
+Analytics and Reporting - Track payment metrics and business performance in real-time
+Getting Started
+This guide will walk you through:
+Setting up webhook endpoints on your server
+Securing your webhooks with proper authentication
+Registering webhooks in the Wave business portal
+Testing your implementation to verify it works
+Understanding event types and their payloads
+Setting Up Endpoints
+Before registering webhooks with Wave, you need to create endpoints on your server to receive and process webhook notifications.
+Endpoint Requirements
+Your webhook endpoint must:
+Accept HTTP POST requests from Wave's servers
+Use HTTPS with a valid SSL certificate
+Respond within 5 seconds to avoid timeouts
+Return HTTP 2xx status codes for successful processing
+Handle duplicate events gracefully (Wave may send the same event multiple times)
+Basic Endpoint Structure
+Here's what a basic webhook endpoint looks like:
+@ app . route ( '/webhooks/wave' , methods = [ 'POST' ])
+def handle_wave_webhook ():
+# 1. Get the raw request body and headers
+raw_body = request . get_data ()
+wave_signature = request . headers . get ( 'Wave-Signature' )
+# 2. Verify the webhook signature (see Security section)
+if not verify_signature ( raw_body , wave_signature ):
+return 'Invalid signature' , 401
+# 3. Parse the event data
+event_data = request . json
+event_type = event_data [ 'type' ]
+# 4. Respond quickly with success
+# (Do heavy processing asynchronously)
+return 'OK' , 200
+def verify_signature ( body , signature ):
+# Signature verification logic (see Security section)
+pass
+const express = require ( ' express ' );
+const app = express ();
+// Middleware to capture raw body
+app . use ( ' /webhooks/wave ' , express . raw ({ type : ' application/json ' }));
+app . post ( ' /webhooks/wave ' , ( req , res ) => {
+// 1. Get the raw request body and headers
+const rawBody = req . body ;
+const waveSignature = req . headers [ ' wave-signature ' ];
+// 2. Verify the webhook signature (see Security section)
+if ( ! verifySignature ( rawBody , waveSignature )) {
+return res . status ( 401 ). send ( ' Invalid signature ' );
+}
+// 3. Parse the event data
+const eventData = JSON . parse ( rawBody );
+const eventType = eventData . type ;
+// 4. Respond quickly with success
+// (Do heavy processing asynchronously)
+res . status ( 200 ). send ( ' OK ' );
+});
+function verifySignature ( body , signature ) {
+// Signature verification logic (see Security section)
+return true ;
+}
+<?php
+// webhook_handler.php
+// 1. Get the raw request body and headers
+$rawBody = file_get_contents ( 'php://input' );
+$waveSignature = $_SERVER [ 'HTTP_WAVE_SIGNATURE' ] ?? '' ;
+// 2. Verify the webhook signature (see Security section)
+if ( ! verifySignature ( $rawBody , $waveSignature )) {
+http_response_code ( 401 );
+echo 'Invalid signature' ;
+exit ;
+}
+// 3. Parse the event data
+$eventData = json_decode ( $rawBody , true );
+$eventType = $eventData [ 'type' ];
+// 4. Respond quickly with success
+// (Do heavy processing asynchronously)
+http_response_code ( 200 );
+echo 'OK' ;
+function verifySignature ( $body , $signature ) {
+// Signature verification logic (see Security section)
+return true ;
+}
+?>
+@RestController
+public class WebhookController {
+@PostMapping ( "/webhooks/wave" )
+public ResponseEntity < String > handleWaveWebhook (
+HttpServletRequest request ,
+@RequestBody String rawBody ) {
+// 1. Get the raw request body and headers
+String waveSignature = request . getHeader ( "Wave-Signature" );
+// 2. Verify the webhook signature (see Security section)
+if (! verifySignature ( rawBody , waveSignature )) {
+return ResponseEntity . status ( 401 ). body ( "Invalid signature" );
+}
+// 3. Parse the event data
+ObjectMapper mapper = new ObjectMapper ();
+try {
+JsonNode eventData = mapper . readTree ( rawBody );
+String eventType = eventData . get ( "type" ). asText ();
+// 4. Respond quickly with success
+// (Do heavy processing asynchronously)
+return ResponseEntity . ok ( "OK" );
+} catch ( Exception e ) {
+return ResponseEntity . status ( 400 ). body ( "Invalid JSON" );
+}
+}
+private boolean verifySignature ( String body , String signature ) {
+// Signature verification logic (see Security section)
+return true ;
+}
+}
+require 'sinatra'
+require 'json'
+post '/webhooks/wave' do
+# 1. Get the raw request body and headers
+raw_body = request . body . read
+wave_signature = request . env [ 'HTTP_WAVE_SIGNATURE' ]
+# 2. Verify the webhook signature (see Security section)
+unless verify_signature ( raw_body , wave_signature )
+status 401
+return 'Invalid signature'
+end
+# 3. Parse the event data
+event_data = JSON . parse ( raw_body )
+event_type = event_data [ 'type' ]
+# 4. Respond quickly with success
+# (Do heavy processing asynchronously)
+status 200
+'OK'
+end
+def verify_signature ( body , signature )
+# Signature verification logic (see Security section)
+true
+end
+package main
+import (
+"encoding/json"
+"io/ioutil"
+"net/http"
+)
+func handleWaveWebhook ( w http . ResponseWriter , r * http . Request ) {
+// 1. Get the raw request body and headers
+rawBody , err := ioutil . ReadAll ( r . Body )
+if err != nil {
+http . Error ( w , "Failed to read body" , http . StatusBadRequest )
+return
+}
+waveSignature := r . Header . Get ( "Wave-Signature" )
+// 2. Verify the webhook signature (see Security section)
+if ! verifySignature ( rawBody , waveSignature ) {
+http . Error ( w , "Invalid signature" , http . StatusUnauthorized )
+return
+}
+// 3. Parse the event data
+var eventData map [ string ] interface {}
+if err := json . Unmarshal ( rawBody , & eventData ); err != nil {
+http . Error ( w , "Invalid JSON" , http . StatusBadRequest )
+return
+}
+eventType := eventData [ "type" ] . ( string )
+// 4. Respond quickly with success
+// (Do heavy processing asynchronously)
+w . WriteHeader ( http . StatusOK )
+w . Write ([] byte ( "OK" ))
+}
+func verifySignature ( body [] byte , signature string ) bool {
+// Signature verification logic (see Security section)
+return true
+}
+func main () {
+http . HandleFunc ( "/webhooks/wave" , handleWaveWebhook )
+http . ListenAndServe ( ":8080" , nil )
+}
+using Microsoft.AspNetCore.Mvc ;
+using System.Text.Json ;
+[ ApiController ]
+[ Route ( "webhooks" )]
+public class WebhookController : ControllerBase
+{
+[ HttpPost ( "wave" )]
+public async Task < IActionResult > HandleWaveWebhook ()
+{
+// 1. Get the raw request body and headers
+using var reader = new StreamReader ( Request . Body );
+var rawBody = await reader . ReadToEndAsync ();
+var waveSignature = Request . Headers [ "Wave-Signature" ]. FirstOrDefault ();
+// 2. Verify the webhook signature (see Security section)
+if (! VerifySignature ( rawBody , waveSignature ))
+{
+return Unauthorized ( "Invalid signature" );
+}
+// 3. Parse the event data
+try
+{
+var eventData = JsonSerializer . Deserialize < JsonElement >( rawBody );
+var eventType = eventData . GetProperty ( "type" ). GetString ();
+// 4. Respond quickly with success
+// (Do heavy processing asynchronously)
+return Ok ( "OK" );
+}
+catch ( JsonException )
+{
+return BadRequest ( "Invalid JSON" );
+}
+}
+private bool VerifySignature ( string body , string signature )
+{
+// Signature verification logic (see Security section)
+return true ;
+}
+}
+Your webhook endpoint is different from the success_url and error_url used in Checkout API requests . Those URLs redirect customers after payment while webhooks notify your server about events.
+Handle Duplicate Events: Wave may send the same event multiple times due to network issues or retries. Make sure your system can handle duplicate notifications safely by implementing idempotency checks.
+Webhook Security
+Before registering your webhook, it's crucial to understand how to verify that requests actually come from Wave and not from malicious actors. Wave provides two security strategies for webhook authentication.
+Security Strategy Overview
+Strategy
+Security Level
+Implementation
+Use Case
+Shared Secret
+⭐⭐
+Simple
+Quick setup, less secure
+Signing Secret
+⭐⭐⭐⭐
+Advanced
+Production use, more secure
+Recommendation: Use Signing Secret for production applications as it provides better security and prevents certain types of attacks.
+Shared Secret
+The simplest authentication method where Wave includes your webhook secret as a Bearer token in the Authorization header.
+How It Works
+Wave includes your secret in every webhook request: Authorization: Bearer YOUR_SECRET
+Your endpoint extracts the token and compares it with your stored secret
+If they match, the request is authentic
+Example Request
+POST /your-webhook-endpoint
+Host: your-domain.com
+Content-Type: application/json
+Authorization: Bearer your_webhook_secret
+User-Agent: Wave/1.0
+{
+"id": "AE5D3JYN6WA",
+"type": "checkout.session.completed",
+"data": {
+// event data
+}
+}
+Security Risk: If your Authorization header gets logged or exposed, attackers can use your secret to send fake webhooks. Rotate your secret immediately if this happens.
+Signing Secret (Recommended)
+A more secure method using HMAC-SHA256 signatures. Wave signs the webhook payload with your secret and includes the signature in the Wave-Signature header.
+How It Works
+Wave creates a timestamp and combines it with the request body
+Wave signs this combined data using HMAC-SHA256 and your secret
+Wave sends the signature in the Wave-Signature header
+Your endpoint verifies the signature matches what you expect
+Signature Format
+The Wave-Signature header contains a timestamp and signature(s):
+Wave-Signature: t=1639081943,v1=942119aedf9fa377844cf010785fe14ef8478c72af0b73d62ea3941335b526a8
+t= - Unix timestamp when the request was sent
+v1= - HMAC-SHA256 signature (there may be multiple signatures during key rotation)
+Verification Steps
+Extract timestamp and signatures from the Wave-Signature header
+Create the payload by combining timestamp + request body
+Compute expected signature using HMAC-SHA256 with your secret
+Compare signatures to verify authenticity
+Check timestamp to prevent replay attacks (reject requests older than 5 minutes)
+Why Signing Secret is Better: Even if the Wave-Signature header gets logged, your secret stays safe. At worst, someone could replay the exact same request but your timestamp checks should prevent this.
+Signature verification implementation:
+<?php
+function webhook_verify_signature_and_decode ( $wave_webhook_secret , $wave_signature , $webhook_body ) {
+// Uncomment var_dump if you need to debug the 3 input values:
+// var_dump($wave_webhook_secret, $wave_signature, $webhook_body);
+$parts = explode ( "," , $wave_signature );
+$timestamp = explode ( "=" , $parts [ 0 ])[ 1 ];
+$signatures = array ();
+foreach ( array_slice ( $parts , 1 ) as $signature ) {
+$signatures [] = explode ( "=" , $signature )[ 1 ];
+}
+$computed_hmac = hash_hmac ( "sha256" , $timestamp . $webhook_body , $wave_webhook_secret );
+$valid = in_array ( $computed_hmac , $signatures );
+if ( $valid ) {
+# The request is valid, you can proceed using the decoded contents.
+return json_decode ( $webhook_body );
+} else {
+die ( "Invalid webhook signature." );
+}
+}
+// This key is given to you by a Wave Representative when we register
+// your webhook URL. (This is different from the API key)
+$wave_webhook_secret = "wave_sn_WHS_xz4m6g8rjs9bshxy05xj4khcvjv7j3hcp4fbpvv6met0zdrjvezg" ;
+// # This header is sent by Wave in each webhook POST request.
+// (The plain HTTP header is 'Wave-Signature')
+$wave_signature = $_SERVER [ 'HTTP_WAVE_SIGNATURE' ];
+// The body of the request, as a plain string, not yet parsed to JSON:
+$webhook_body = file_get_contents ( 'php://input' );
+$webhook_json = webhook_verify_signature_and_decode ( $wave_webhook_secret , $wave_signature , $webhook_body )
+// You can now proceed to use the webhook data to process the request:
+$webhook_type = $webhook_json -> type ;
+$webhook_data = $webhook_json -> data ;
+?>
+const crypto = require ( ' crypto ' );
+const validateWaveSignature = ( waveSignature , rawBody , webhookSecret ) => {
+const parts = waveSignature . split ( ' , ' );
+const timestampPart = parts . find ( comp => comp . startsWith ( ' t= ' ));
+const timestamp = timestampPart ?. split ( " = " )[ 1 ];
+const signatureParts = parts . filter ( comp => comp . startsWith ( ' v1= ' ));
+const signatures = signatureParts . map ( s => { return s . split ( " = " )[ 1 ]})
+const payload = timestamp + rawBody ;
+const calculatedSignature = crypto . createHmac ( ' sha256 ' , webhookSecret ). update ( payload ). digest ( " hex " );
+return signatures . includes ( calculatedSignature );
+};
+import java.nio.charset.StandardCharsets ;
+import java.security.GeneralSecurityException ;
+import java.util.ArrayList ;
+import java.util.List ;
+import javax.crypto.Mac ;
+import javax.crypto.spec.SecretKeySpec ;
+public class WaveWebhookSignatureVerifier {
+private static final byte [] HEX_ARRAY = "0123456789abcdef" . getBytes ( StandardCharsets . US_ASCII );
+public static boolean verifySignature ( String waveSignature , String body , String webhookSecret ) throws GeneralSecurityException {
+final String [] waveSignatureParts = waveSignature . split ( "," );
+String timestamp = "" ;
+List < String > signatures = new ArrayList <>();
+for ( String elem : waveSignatureParts ) {
+String [] keyval = elem . split ( "=" );
+String key = keyval [ 0 ];
+String val = keyval [ 1 ];
+// Uncomment this if you want to see which values were extracted:
+// System.out.printf("key: %s, val: %s %n", key, val);
+if ( key . equals ( "t" )) {
+timestamp = val ;
+} else {
+signatures . add ( val );
+}
+}
+String data = timestamp + body ;
+Mac sha256_HMAC = Mac . getInstance ( "HmacSHA256" );
+SecretKeySpec secret_key = new SecretKeySpec ( webhookSecret . getBytes ( StandardCharsets . UTF_8 ), "HmacSHA256" );
+sha256_HMAC . init ( secret_key );
+byte [] hash = sha256_HMAC . doFinal ( data . getBytes ( StandardCharsets . UTF_8 ));
+String calculatedSignature = bytesToHex ( hash );
+// Uncomment this if you want to see what was calculated:
+// System.out.printf("Signature: %s %n", calculatedSignature);
+return signatures . contains ( calculatedSignature );
+}
+private static String bytesToHex ( byte [] bytes ) {
+byte [] hexChars = new byte [ bytes . length * 2 ];
+for ( int j = 0 ; j < bytes . length ; j ++) {
+int v = bytes [ j ] & 0xFF ;
+hexChars [ j * 2 ] = HEX_ARRAY [ v >>> 4 ];
+hexChars [ j * 2 + 1 ] = HEX_ARRAY [ v & 0x0F ];
+}
+return new String ( hexChars , StandardCharsets . UTF_8 );
+}
+}
+require 'openssl'
+def validate_wave_signature ( wave_signature , raw_body , webhook_secret )
+parts = wave_signature . split ( ',' )
+timestamp = parts . find { | comp | comp . start_with? ( 't=' ) } & . split ( '=' ) & . last
+signatures = parts . select { | comp | comp . start_with? ( 'v1=' ) }. map { | s | s . split ( '=' ). last }
+payload = timestamp + raw_body
+calculated_signature = OpenSSL :: HMAC . hexdigest ( 'sha256' , webhook_secret , payload )
+signatures . include? ( calculated_signature )
+end
+import hmac
+import hashlib
+def validate_wave_signature ( wave_signature , raw_body , webhook_secret ):
+parts = wave_signature . split ( ',' )
+timestamp = parts [ 0 ]. split ( '=' )[ 1 ]
+signatures = [ s . split ( '=' )[ 1 ] for s in parts [ 1 :]]
+payload = timestamp + raw_body
+calculated_signature = hmac . new ( webhook_secret . encode ( 'utf-8' ), payload . encode ( 'utf-8' ), hashlib . sha256 ). hexdigest ()
+return calculated_signature in signatures
+package main
+import (
+"crypto/hmac"
+"crypto/sha256"
+"encoding/hex"
+"fmt"
+"strings"
+)
+func validateWaveSignature ( waveSignature , rawBody , webhookSecret string ) bool {
+parts := strings . Split ( waveSignature , "," )
+timestamp := strings . Split ( parts [ 0 ], "=" )[ 1 ]
+signatures := [] string {}
+for _ , part := range parts [ 1 : ] {
+signatures = append ( signatures , strings . Split ( part , "=" )[ 1 ])
+}
+payload := timestamp + rawBody
+h := hmac . New ( sha256 . New , [] byte ( webhookSecret ))
+h . Write ([] byte ( payload ))
+calculatedSignature := hex . EncodeToString ( h . Sum ( nil ))
+for _ , signature := range signatures {
+if signature == calculatedSignature {
+return true
+}
+}
+return false
+}
+using System ;
+using System.Collections.Generic ;
+using System.Linq ;
+using System.Security.Cryptography ;
+using System.Text ;
+public class WaveSignatureValidator
+{
+public static bool ValidateSignature ( string waveSignature , string body , string webhookSecret )
+{
+var parts = waveSignature . Split ( "," );
+var timestamp = parts . First ( p => p . StartsWith ( "t=" )). Split ( "=" )[ 1 ];
+var signatures = parts . Where ( p => p . StartsWith ( "v1=" )). Select ( p => p . Split ( "=" )[ 1 ]). ToList ();
+var payload = timestamp + body ;
+using ( var hmac = new HMACSHA256 ( Encoding . UTF8 . GetBytes ( webhookSecret )))
+{
+var hash = hmac . ComputeHash ( Encoding . UTF8 . GetBytes ( payload ));
+var calculatedSignature = BitConverter . ToString ( hash ). Replace ( "-" , "" ). ToLower ();
+return signatures . Contains ( calculatedSignature );
+}
+}
+}
+Help, the signature validation fails
+The most common reason for this is that some frameworks automatically parse the body of the webhook you receive. This gives the wrong result when you calculate the hash. The reason for this is that the signature is only unique if the key order in the JSON hasn't changed, there are no additional or missing spaces and there are no additional line breaks.
+The solution is to not parse the body but instead do the signature validation against the raw string you received.
+Here are some common examples that indicate this problem.
+Example Wave-Signature validation
+Webhook secret
+'wave_sn_WHS_xz4m6g8rjs9bshxy05xj4khcvjv7j3hcp4fbpvv6met0zdrjvezg'
+Wave-Signature header of the webhook's POST request to your server
+'t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b'
+Webhook body of the webhook's POST request to your server
+'{"id": "AE_ijzo7oGgrlM7", "type": "checkout.session.completed", "data": {"id": "cos-1b01sghpg100j", "amount": "100", "checkout_status": "complete", "client_reference": null, "currency": "XOF", "error_url": "https://example.com/error", "last_payment_error": null, "business_name": "Annas Apiaries", "payment_status": "succeeded", "success_url": "https://example.com/success", "wave_launch_url": "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries", "when_completed": "2022-11-08T15:05:45Z", "when_created": "2022-11-08T15:05:32Z", "when_expires": "2022-11-09T15:05:32Z", "transaction_id": "TCN4Y4ZC3FM"}}'
+The following is a full example for webhook signature validation. The 3 things you need are
+The webhook secret (given to you by wave when your webhook URL is registered)
+The Wave-Signature header sent in every webhook request. This is a POST request by Wave, to your server.
+The body of the POST request.
+Note that 3 examples are quoted with ' , since they are strings but the outer quotes aren't part of the string.
+Follow the instructions under Example Wave-Signature validation to verify the signature in the example.
+Example 1
+This is a correct payload:
+' { "id" : "AE_ijzo7oGgrlM7" , "type" : "checkout.session.completed" , "data" : { "id" : "cos-1b01sghpg100j" , "amount" : "100" , "checkout_status" : "complete" , "client_reference" : null , "currency" : "XOF" , "error_url" : "https://example.com/error" , "last_payment_error" : null , "business_name" : "Annas Apiaries" , "payment_status" : "succeeded" , "success_url" : "https://example.com/success" , "wave_launch_url" : "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries" , "when_completed" : "2022-11-08T15:05:45Z" , "when_created" : "2022-11-08T15:05:32Z" , "when_expires" : "2022-11-09T15:05:32Z" , "transaction_id" : "TCN4Y4ZC3FM" }} '
+Example 2
+The missing spaces indicate that the body was parsed as JSON and then converted into string again:
+' { "id" : "AE_ijzo7oGgrlM7" , "type" : "checkout.session.completed" , "data" :{ "id" : "cos-1b01sghpg100j" , "amount" : "100" , "checkout_status" : "complete" , "client_reference" : null , "currency" : "XOF" , "error_url" : "https://example.com/error" , "last_payment_error" : null , "business_name" : "AnnasApiaries" , "payment_status" : "succeeded" , "success_url" : "https://example.com/success" , "wave_launch_url" : "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries" , "when_completed" : "2022-11-08T15:05:45Z" , "when_created" : "2022-11-08T15:05:32Z" , "when_expires" : "2022-11-09T15:05:32Z" , "transaction_id" : "TCN4Y4ZC3FM" }} '
+Example 3
+You only hash the data payload but you need the full body:
+{ "id" : "cos-1b01sghpg100j" , "amount" : "100" , "checkout_status" : "complete" , "client_reference" : null , "currency" : "XOF" , "error_url" : "https://example.com/error" , "last_payment_error" : null , "business_name" : "Annas Apiaries" , "payment_status" : "succeeded" , "success_url" : "https://example.com/success" , "wave_launch_url" : "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries" , "when_completed" : "2022-11-08T15:05:45Z" , "when_created" : "2022-11-08T15:05:32Z" , "when_expires" : "2022-11-09T15:05:32Z" , "transaction_id" : "TCN4Y4ZC3FM" }
+Example 4
+We don't send line breaks in the body, so the JSON below is not the exact body string content:
+{
+"id" : "AE_ijzo7oGgrlM7" ,
+"type" : "checkout.session.completed" ,
+"data" : {
+"id" : "cos-1b01sghpg100j" ,
+"amount" : "100" ,
+"checkout_status" : "complete" ,
+"client_reference" : null ,
+"currency" : "XOF" ,
+"error_url" : "https://example.com/error" ,
+"last_payment_error" : null ,
+"business_name" : "Annas Apiaries" ,
+"payment_status" : "succeeded" ,
+"success_url" : "https://example.com/success" ,
+"wave_launch_url" : "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries" ,
+"when_completed" : "2022-11-08T15:05:45Z" ,
+"when_created" : "2022-11-08T15:05:32Z" ,
+"when_expires" : "2022-11-09T15:05:32Z" ,
+"transaction_id" : "TCN4Y4ZC3FM"
+}
+}
+Webhook Registration
+Now that you understand security, you can register your webhook with Wave through the Business Portal.
+Registration Steps
+Access the Developer Portal
+Go to the Webhooks section in your Wave Business Portal
+Add New Webhook
+Click "Add New Webhook" and provide your endpoint details
+Configure Your Webhook
+Endpoint URL : Your server's webhook URL (must be HTTPS)
+Security Strategy : Choose between Shared Secret or Signing Secret (see above)
+Event Types : Select which events you want to receive (see Event Types section)
+Save Your Secret
+After registration, Wave shows you the webhook secret. Save this immediately - you won't be able to see it again.
+Secure Your Secret: Store your webhook secret securely and never save it in plaintext, commit it to version control or expose it in logs. If your secret is compromised, rotate it immediately.
+Testing Your Webhook
+Before going live, thoroughly test your webhook implementation to ensure it handles events correctly.
+Using the Business Portal
+The easiest way to test is using the Webhook Tester in the Business Portal:
+Navigate to your registered webhook
+Click the test button to send a sample event
+Verify your endpoint receives and processes the request correctly
+Manual Testing Checklist
+Test these scenarios to ensure your webhook is production-ready:
+✅ Basic connectivity - Your server receives POST requests
+✅ Authentication - Your signature verification works correctly
+✅ Event parsing - You can extract event type and data from the request body
+✅ Idempotency - Duplicate events are handled gracefully
+✅ Error handling - Your endpoint returns appropriate HTTP status codes
+✅ Performance - Responses are sent within 5 seconds
+Testing with cURL
+Replace <your webhook URL> with your server's address:
+# Test basic connectivity
+curl -X POST '<your webhook URL>' \
+-H 'Content-Type: application/json' \
+-d '{"test_key": "test_value"}'
+# Test with realistic event data
+curl -X POST '<your webhook URL>' \
+-H 'Content-Type: application/json' \
+-H 'Wave-Signature: t=1639081943,v1=test_signature' \
+-d '{
+"id": "EV_test123",
+"type": "checkout.session.completed",
+"data": {
+"id": "cos-test456",
+"amount": "1000",
+"currency": "XOF",
+"payment_status": "succeeded"
+}
+}'
+Advanced Example
+Webhook example with a realistic body:
+curl -i -X POST <your webhook URL> \
+-H 'Content-Type: application/json' \
+-H "Wave-Signature: t=123,v1=abc" \
+-d '{
+"id": "EV_QvEZuDSQbLdI",
+"type": "checkout.session.completed",
+"data": {
+"id": "cos-18qq25rgr100a",
+"amount": "100",
+"checkout_status": "complete",
+"client_reference": "cbd2c580",
+"currency": "XOF",
+"payment_status": "succeeded",
+"success_url": "https://example.com/success",
+"error_url": "https://example.com/error",
+"wave_launch_url": "https://pay.wave.com/c/cos-18qq25rgr100a",
+"when_completed": "2022-12-08T10:15:32Z",
+"when_created": "2022-12-08T10:13:04Z",
+"when_expires": "2022-12-09T10:13:04Z"
+}
+}'
+<?php
+$ch = curl_init ();
+curl_setopt ( $ch , CURLOPT_URL , '<your webhook URL>' );
+curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , 1 );
+curl_setopt ( $ch , CURLOPT_POST , 1 );
+$data = array (
+'id' => 'EV_QvEZuDSQbLdI' ,
+'type' => 'checkout.session.completed' ,
+'data' => array (
+'id' => 'cos-18qq25rgr100a' ,
+'amount' => '100' ,
+'checkout_status' => 'complete' ,
+'client_reference' => 'cbd2c580' ,
+'currency' => 'XOF' ,
+'payment_status' => 'succeeded' ,
+'success_url' => 'https://example.com/success' ,
+'error_url' => 'https://example.com/error' ,
+'wave_launch_url' => 'https://pay.wave.com/c/cos-18qq25rgr100a' ,
+'when_completed' => '2022-12-08T10:15:32Z' ,
+'when_created' => '2022-12-08T10:13:04Z' ,
+'when_expires' => '2022-12-09T10:13:04Z'
+)
+);
+curl_setopt ( $ch , CURLOPT_POSTFIELDS , json_encode ( $data ));
+$headers = array ();
+$headers [] = 'Content-Type: application/json' ;
+$headers [] = 'Wave-Signature: t=123,v1=abc' ;
+curl_setopt ( $ch , CURLOPT_HTTPHEADER , $headers );
+$result = curl_exec ( $ch );
+if ( curl_errno ( $ch )) {
+echo 'Error:' . curl_error ( $ch );
+}
+curl_close ( $ch );
+?>
+var axios = require ( ' axios ' );
+var data = JSON . stringify ({ " id " : " EV_QvEZuDSQbLdI " , " type " : " checkout.session.completed " , " data " :{ " id " : " cos-18qq25rgr100a " , " amount " : " 100 " , " checkout_status " : " complete " , " client_reference " : " cbd2c580 " , " currency " : " XOF " , " payment_status " : " succeeded " , " success_url " : " https://example.com/success " , " error_url " : " https://example.com/error " , " wave_launch_url " : " https://pay.wave.com/c/cos-18qq25rgr100a " , " when_completed " : " 2022-12-08T10:15:32Z " , " when_created " : " 2022-12-08T10:13:04Z " , " when_expires " : " 2022-12-09T10:13:04Z " }});
+var config = {
+method : ' post ' ,
+url : ' <your webhook URL> ' ,
+headers : {
+' Content-Type ' : ' application/json ' ,
+' Wave-Signature ' : ' t=123,v1=abc '
+},
+data : data
+};
+axios ( config )
+. then ( function ( response ) {
+console . log ( JSON . stringify ( response . data ));
+})
+. catch ( function ( error ) {
+console . log ( error );
+});
+import java.net.URI ;
+import java.net.http.HttpClient ;
+import java.net.http.HttpRequest ;
+import java.net.http.HttpResponse ;
+import java.net.http.HttpRequest.BodyPublishers ;
+import java.net.http.HttpRequest.BodyPublisher ;
+import java.net.http.HttpResponse.BodyHandlers ;
+import java.util.Map ;
+import java.util.HashMap ;
+public class Main {
+public static void main ( String [] args ) {
+HttpClient client = HttpClient . newHttpClient ();
+HttpRequest request = HttpRequest . newBuilder ()
+. uri ( URI . create ( "<your webhook URL>" ))
+. header ( "Content-Type" , "application/json" )
+. header ( "Wave-Signature" , "t=123,v1=abc" )
+. POST ( BodyPublishers . ofString ( "{\"id\":\"EV_QvEZuDSQbLdI\",\"type\":\"checkout.session.completed\",\"data\":{\"id\":\"cos-18qq25rgr100a\",\"amount\":\"100\",\"checkout_status\":\"complete\",\"client_reference\":\"cbd2c580\",\"currency\":\"XOF\",\"payment_status\":\"succeeded\",\"success_url\":\"https://example.com/success\",\"error_url\":\"https://example.com/error\",\"wave_launch_url\":\"https://pay.wave.com/c/cos-18qq25rgr100a\",\"when_completed\":\"2022-12-08T10:15:32Z\",\"when_created\":\"2022-12-08T10:13:04Z\",\"when_expires\":\"2022-12-09T10:13:04Z\"}}" ))
+. build ();
+try {
+HttpResponse < String > response = client . send ( request , BodyHandlers . ofString ());
+System . out . println ( response . body ());
+} catch ( Exception e ) {
+e . printStackTrace ();
+}
+}
+}
+require 'net/http'
+require 'uri'
+require 'json'
+uri = URI . parse ( "<your webhook URL>" )
+request = Net :: HTTP :: Post . new ( uri )
+request . content_type = "application/json"
+request [ "Wave-Signature" ] = "t=123,v1=abc"
+request . body = JSON . dump ({
+"id" => "EV_QvEZuDSQbLdI" ,
+"type" => "checkout.session.completed" ,
+"data" => {
+"id" => "cos-18qq25rgr100a" ,
+"amount" => "100" ,
+"checkout_status" => "complete" ,
+"client_reference" => "cbd2c580" ,
+"currency" => "XOF" ,
+"payment_status" => "succeeded" ,
+"success_url" => "https://example.com/success" ,
+"error_url" => "https://example.com/error" ,
+"wave_launch_url" => "https://pay.wave.com/c/cos-18qq25rgr100a" ,
+"when_completed" => "2022-12-08T10:15:32Z" ,
+"when_created" => "2022-12-08T10:13:04Z" ,
+"when_expires" => "2022-12-09T10:13:04Z"
+}
+})
+req_options = {
+use_ssl: uri . scheme == "https" ,
+}
+response = Net :: HTTP . start ( uri . hostname , uri . port , req_options ) do | http |
+http . request ( request )
+end
+puts response . body
+import requests
+url = '<your webhook URL>'
+payload = {
+"id" : "EV_QvEZuDSQbLdI" ,
+"type" : "checkout.session.completed" ,
+"data" : {
+"id" : "cos-18qq25rgr100a" ,
+"amount" : "100" ,
+"checkout_status" : "complete" ,
+"client_reference" : "cbd2c580" ,
+"currency" : "XOF" ,
+"payment_status" : "succeeded" ,
+"success_url" : "https://example.com/success" ,
+"error_url" : "https://example.com/error" ,
+"wave_launch_url" : "https://pay.wave.com/c/cos-18qq25rgr100a" ,
+"when_completed" : "2022-12-08T10:15:32Z" ,
+"when_created" : "2022-12-08T10:13:04Z" ,
+"when_expires" : "2022-12-09T10:13:04Z"
+}
+}
+headers = {
+'Content-Type' : 'application/json' ,
+'Wave-Signature' : 't=123,v1=abc'
+}
+response = requests . request ( "POST" , url , headers = headers , json = payload )
+print ( response . text )
+package main
+import (
+"bytes"
+"fmt"
+"net/http"
+)
+func main () {
+url := "<your webhook URL>"
+method := "POST"
+payload := & bytes . Buffer {}
+payload . WriteString ( `{"id": "EV_QvEZuDSQbLdI", "type": "checkout.session.completed", "data": {"id": "cos-18qq25rgr100a", "amount": "100", "checkout_status": "complete", "client_reference": "cbd2c580", "currency": "XOF", "payment_status": "succeeded", "success_url": "https://example.com/success", "error_url": "https://example.com/error", "wave_launch_url": "https://pay.wave.com/c/cos-18qq25rgr100a", "when_completed": "2022-12-08T10:15:32Z", "when_created": "2022-12-08T10:13:04Z", "when_expires": "2022-12-09T10:13:04Z"}}` )
+client := & http . Client {}
+req , err := http . NewRequest ( method , url , payload )
+if err != nil {
+fmt . Println ( err )
+return
+}
+req . Header . Add ( "Content-Type" , "application/json" )
+req . Header . Add ( "Wave-Signature" , "t=123,v1=abc" )
+res , err := client . Do ( req )
+if err != nil {
+fmt . Println ( err )
+return
+}
+defer res . Body . Close ()
+fmt . Println ( "response Status:" , res . Status )
+}
+using System ;
+using System.IO ;
+using System.Net ;
+using System.Text ;
+class Program
+{
+static void Main ()
+{
+var request = ( HttpWebRequest ) WebRequest . Create ( "<your webhook URL>" );
+request . Method = "POST" ;
+request . ContentType = "application/json" ;
+request . Headers . Add ( "Wave-Signature" , "t=123,v1=abc" );
+var data = Encoding . ASCII . GetBytes ( "{\"id\":\"EV_QvEZuDSQbLdI\",\"type\":\"checkout.session.completed\",\"data\":{\"id\":\"cos-18qq25rgr100a\",\"amount\":\"100\",\"checkout_status\":\"complete\",\"client_reference\":\"cbd2c580\",\"currency\":\"XOF\",\"payment_status\":\"succeeded\",\"success_url\":\"https://example.com/success\",\"error_url\":\"https://example.com/error\",\"wave_launch_url\":\"https://pay.wave.com/c/cos-18qq25rgr100a\",\"when_completed\":\"2022-12-08T10:15:32Z\",\"when_created\":\"2022-12-08T10:13:04Z\",\"when_expires\":\"2022-12-09T10:13:04Z\"}}" );
+request . ContentLength = data . Length ;
+using ( var stream = request . GetRequestStream ())
+{
+stream . Write ( data , 0 , data . Length );
+}
+var response = ( HttpWebResponse ) request . GetResponse ();
+var responseString = new StreamReader ( response . GetResponseStream ()). ReadToEnd ();
+Console . WriteLine ( responseString );
+}
+}
+Full Webhook Example
+Full webhook example, including a valid signature. The signature needs to be validated against the webhook secret wave_sn_WHS_xz4m6g8rjs9bshxy05xj4khcvjv7j3hcp4fbpvv6met0zdrjvezg :
+curl -i -X POST <your webhook URL> \
+-H 'Content-Type: application/json' \
+-H "Wave-Signature: t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b" \
+-d '{
+"id": "AE_ijzo7oGgrlM7",
+"type": "checkout.session.completed",
+"data": {
+"id": "cos-1b01sghpg100j",
+"amount": "100",
+"checkout_status": "complete",
+"client_reference": null,
+"currency": "XOF",
+"error_url": "https://example.com/error",
+"last_payment_error": null,
+"business_name": "Annas Apiaries",
+"payment_status": "succeeded",
+"success_url": "https://example.com/success",
+"wave_launch_url": "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries",
+"when_completed": "2022-11-08T15:05:45Z",
+"when_created": "2022-11-08T15:05:32Z",
+"when_expires": "2022-11-09T15:05:32Z",
+"transaction_id": "TCN4Y4ZC3FM"
+}
+}'
+<?php
+$ch = curl_init ();
+curl_setopt ( $ch , CURLOPT_URL , '<your webhook URL>' );
+curl_setopt ( $ch , CURLOPT_RETURNTRANSFER , 1 );
+curl_setopt ( $ch , CURLOPT_POST , 1 );
+$data = array (
+'id' => 'AE_ijzo7oGgrlM7' ,
+'type' => 'checkout.session.completed' ,
+'data' => array (
+'id' => 'cos-1b01sghpg100j' ,
+'amount' => '100' ,
+'checkout_status' => 'complete' ,
+'client_reference' => null ,
+'currency' => 'XOF' ,
+'error_url' => 'https://example.com/error' ,
+'last_payment_error' => null ,
+'business_name' => 'Annas Apiaries' ,
+'payment_status' => 'succeeded' ,
+'success_url' => 'https://example.com/success' ,
+'wave_launch_url' => 'https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries' ,
+'when_completed' => '2022-11-08T15:05:45Z' ,
+'when_created' => '2022-11-08T15:05:32Z' ,
+'when_expires' => '2022-11-09T15:05:32Z' ,
+'transaction_id' => 'TCN4Y4ZC3FM'
+)
+);
+curl_setopt ( $ch , CURLOPT_POSTFIELDS , json_encode ( $data ));
+$headers = array ();
+$headers [] = 'Content-Type: application/json' ;
+$headers [] = 'Wave-Signature: t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b' ;
+curl_setopt ( $ch , CURLOPT_HTTPHEADER , $headers );
+$result = curl_exec ( $ch );
+if ( curl_errno ( $ch )) {
+echo 'Error:' . curl_error ( $ch );
+}
+curl_close ( $ch );
+?>
+var axios = require ( ' axios ' );
+var data = JSON . stringify ({ " id " : " AE_ijzo7oGgrlM7 " , " type " : " checkout.session.completed " , " data " :{ " id " : " cos-1b01sghpg100j " , " amount " : " 100 " , " checkout_status " : " complete " , " client_reference " : null , " currency " : " XOF " , " error_url " : " https://example.com/error " , " last_payment_error " : null , " business_name " : " Annas Apiaries " , " payment_status " : " succeeded " , " success_url " : " https://example.com/success " , " wave_launch_url " : " https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries " , " when_completed " : " 2022-11-08T15:05:45Z " , " when_created " : " 2022-11-08T15:05:32Z " , " when_expires " : " 2022-11-09T15:05:32Z " , " transaction_id " : " TCN4Y4ZC3FM " }});
+var config = {
+method : ' post ' ,
+url : ' <your webhook URL> ' ,
+headers : {
+' Content-Type ' : ' application/json ' ,
+' Wave-Signature ' : ' t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b '
+},
+data : data
+};
+axios ( config )
+. then ( function ( response ) {
+console . log ( JSON . stringify ( response . data ));
+})
+. catch ( function ( error ) {
+console . log ( error );
+});
+import java.net.HttpURLConnection ;
+import java.net.URL ;
+import java.io.OutputStream ;
+import java.io.BufferedReader ;
+import java.io.InputStreamReader ;
+public class Main {
+public static void main ( String [] args ) {
+try {
+URL url = new URL ( "<your webhook URL>" );
+HttpURLConnection conn = ( HttpURLConnection ) url . openConnection ();
+conn . setRequestMethod ( "POST" );
+conn . setRequestProperty ( "Content-Type" , "application/json" );
+conn . setRequestProperty ( "Wave-Signature" , "t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b" );
+conn . setDoOutput ( true );
+OutputStream os = conn . getOutputStream ();
+byte [] input = "{\"id\": \"AE_ijzo7oGgrlM7\", \"type\": \"checkout.session.completed\", \"data\": {\"id\": \"cos-1b01sghpg100j\", \"amount\": \"100\", \"checkout_status\": \"complete\", \"client_reference\": null, \"currency\": \"XOF\", \"error_url\": \"https://example.com/error\", \"last_payment_error\": null, \"business_name\": \"Annas Apiaries\", \"payment_status\": \"succeeded\", \"success_url\": \"https://example.com/success\", \"wave_launch_url\": \"https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries\", \"when_completed\": \"2022-11-08T15:05:45Z\", \"when_created\": \"2022-11-08T15:05:32Z\", \"when_expires\": \"2022-11-09T15:05:32Z\", \"transaction_id\": \"TCN4Y4ZC3FM\"}}" . getBytes ( "utf-8" );
+os . write ( input , 0 , input . length );
+BufferedReader br = new BufferedReader ( new InputStreamReader (( conn . getInputStream ())));
+String output ;
+while (( output = br . readLine ()) != null ) {
+System . out . println ( output );
+}
+conn . disconnect ();
+} catch ( Exception e ) {
+e . printStackTrace ();
+}
+}
+}
+require "uri"
+require "net/http"
+url = URI ( "<your webhook URL>" )
+https = Net :: HTTP . new ( url . host , url . port )
+https . use_ssl = true
+request = Net :: HTTP :: Post . new ( url )
+request [ "Content-Type" ] = "application/json"
+request [ "Wave-Signature" ] = "t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b"
+request . body = "{ \" id \" : \" AE_ijzo7oGgrlM7 \" , \" type \" : \" checkout.session.completed \" , \" data \" :{ \" id \" : \" cos-1b01sghpg100j \" , \" amount \" : \" 100 \" , \" checkout_status \" : \" complete \" , \" client_reference \" :null, \" currency \" : \" XOF \" , \" error_url \" : \" https://example.com/error \" , \" last_payment_error \" :null, \" business_name \" : \" Annas Apiaries \" , \" payment_status \" : \" succeeded \" , \" success_url \" : \" https://example.com/success \" , \" wave_launch_url \" : \" https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries \" , \" when_completed \" : \" 2022-11-08T15:05:45Z \" , \" when_created \" : \" 2022-11-08T15:05:32Z \" , \" when_expires \" : \" 2022-11-09T15:05:32Z \" , \" transaction_id \" : \" TCN4Y4ZC3FM \" }"
+response = https . request ( request )
+puts response . read_body
+import requests
+url = '<your webhook URL>'
+payload = "{ \" id \" : \" AE_ijzo7oGgrlM7 \" , \" type \" : \" checkout.session.completed \" , \" data \" : { \" id \" : \" cos-1b01sghpg100j \" , \" amount \" : \" 100 \" , \" checkout_status \" : \" complete \" , \" client_reference \" : null, \" currency \" : \" XOF \" , \" error_url \" : \" https://example.com/error \" , \" last_payment_error \" : null, \" business_name \" : \" Annas Apiaries \" , \" payment_status \" : \" succeeded \" , \" success_url \" : \" https://example.com/success \" , \" wave_launch_url \" : \" https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries \" , \" when_completed \" : \" 2022-11-08T15:05:45Z \" , \" when_created \" : \" 2022-11-08T15:05:32Z \" , \" when_expires \" : \" 2022-11-09T15:05:32Z \" , \" transaction_id \" : \" TCN4Y4ZC3FM \" }"
+headers = {
+'Content-Type' : 'application/json' ,
+'Wave-Signature' : 't=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b'
+}
+response = requests . request ( "POST" , url , headers = headers , data = payload )
+print ( response . text . encode ( 'utf8' ))
+package main
+import (
+"bytes"
+"fmt"
+"net/http"
+)
+func main () {
+url := "<your webhook URL>"
+method := "POST"
+payload := & bytes . Buffer {}
+payload . WriteString ( `{"id": "AE_ijzo7oGgrlM7", "type": "checkout.session.completed", "data": {"id": "cos-1b01sghpg100j", "amount": "100", "checkout_status": "complete", "client_reference": null, "currency": "XOF", "error_url": "https://example.com/error", "last_payment_error": null, "business_name": "Annas Apiaries", "payment_status": "succeeded", "success_url": "https://example.com/success", "wave_launch_url": "https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries", "when_completed": "2022-11-08T15:05:45Z", "when_created": "2022-11-08T15:05:32Z", "when_expires": "2022-11-09T15:05:32Z", "transaction_id": "TCN4Y4ZC3FM"}` )
+client := & http . Client {}
+req , err := http . NewRequest ( method , url , payload )
+if err != nil {
+fmt . Println ( err )
+return
+}
+req . Header . Add ( "Content-Type" , "application/json" )
+req . Header . Add ( "Wave-Signature" , "t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b" )
+res , err := client . Do ( req )
+if err != nil {
+fmt . Println ( err )
+return
+}
+defer res . Body . Close ()
+fmt . Println ( res )
+}
+using System ;
+using System.IO ;
+using System.Net ;
+using System.Text ;
+class Program
+{
+static void Main ()
+{
+var request = ( HttpWebRequest ) WebRequest . Create ( "<your webhook URL>" );
+request . Method = "POST" ;
+request . ContentType = "application/json" ;
+request . Headers . Add ( "Wave-Signature" , "t=1667920421,v1=53c971695230e9c51b1030d673eee76e70bbcdf8a7c5b8c1d44e0b8b1329647b" );
+var data = Encoding . ASCII . GetBytes ( "{\"id\": \"AE_ijzo7oGgrlM7\", \"type\": \"checkout.session.completed\", \"data\": {\"id\": \"cos-1b01sghpg100j\", \"amount\": \"100\", \"checkout_status\": \"complete\", \"client_reference\": null, \"currency\": \"XOF\", \"error_url\": \"https://example.com/error\", \"last_payment_error\": null, \"business_name\": \"Annas Apiaries\", \"payment_status\": \"succeeded\", \"success_url\": \"https://example.com/success\", \"wave_launch_url\": \"https://pay.wave.com/c/cos-1b01sghpg100j?a=100&c=XOF&m=Annas%20Apiaries\", \"when_completed\": \"2022-11-08T15:05:45Z\", \"when_created\": \"2022-11-08T15:05:32Z\", \"when_expires\": \"2022-11-09T15:05:32Z\", \"transaction_id\": \"TCN4Y4ZC3FM\"}" );
+using ( var stream = request . GetRequestStream ())
+{
+stream . Write ( data , 0 , data . Length );
+}
+var response = ( HttpWebResponse ) request . GetResponse ();
+var responseString = new StreamReader ( response . GetResponseStream ()). ReadToEnd ();
+Console . WriteLine ( responseString );
+}
+}
+Production Readiness: Only enable your webhook in production after all tests pass and you've verified signature validation works correctly.
+Webhook Delivery and Retries
+Understanding how Wave handles webhook delivery is important for building robust integrations:
+Retry Logic:
+- If your server doesn't respond with HTTP 2xx , Wave will retry sending the notification for up to 3 days
+- Respond with a successful status code (HTTP 2xx ) immediately, then process the event asynchronously
+- This prevents unnecessary retries and ensures reliable event delivery
+Delivery Guarantees:
+Wave will make every attempt to successfully deliver a webhook event, but due to the nature of distributed systems:
+- Events may occasionally be missed
+- Events may be delivered multiple times
+- Events may arrive out of order
+Best Practice: Your system must be robust to missing, duplicate, and out-of-order webhook events. Use the event id field for idempotency checks.
+Event Types
+Wave sends webhook notifications for these events. Choose only the events your application needs to reduce unnecessary traffic.
+When you've registered a webhook to receive notifications of some events and one of those events occurs, Wave sends a request to the webhook endpoint. The body of the request is an Event object containing an event type that describes what happened and a data object with the changed state.
+As an example, when a checkout session is completed successfully, the event type would be checkout.session.completed and the data object would be a Checkout Session object containing the details of the checkout with a status of complete .
+Checkout Events
+checkout.session.completed
+Sent when a customer successfully completes a checkout session payment.
+{
+"id" : "EV_QvEZuDSQbLdI" ,
+"type" : "checkout.session.completed" ,
+"data" : {
+"id" : "cos-18qq25rgr100a" ,
+"amount" : "1000" ,
+"currency" : "XOF" ,
+"payment_status" : "succeeded" ,
+"checkout_status" : "complete" ,
+"client_reference" : "order-123" ,
+"transaction_id" : "TCN4Y4ZC3FM" ,
+"when_completed" : "2021-12-08T10:15:32Z"
+}
+}
+checkout.session.payment_failed
+Sent when a checkout session payment fails. You may receive multiple failures before a success.
+{
+"id" : "EV_8bO0d7TwW6Eq" ,
+"type" : "checkout.session.payment_failed" ,
+"data" : {
+"id" : "cos-18qq25rgr100a" ,
+"payment_status" : "failed" ,
+"checkout_status" : "failed" ,
+"last_payment_error" : {
+"code" : "insufficient-funds" ,
+"message" : "Insufficient balance"
+}
+}
+}
+B2B Events
+b2b.payment_received
+Sent when your business receives a B2B payment from another Wave business.
+{
+"id" : "AE_ijzo7oGgrlM8" ,
+"type" : "b2b.payment_received" ,
+"data" : {
+"id" : "b2b-1ndjb8dj81008" ,
+"amount" : "39800" ,
+"currency" : "XOF" ,
+"sender_id" : "M_qn0zhfcKV1Tl" ,
+"client_reference" : "invoice-456" ,
+"when_created" : "2022-08-10T14:28:15Z"
+}
+}
+b2b.payment_failed
+Sent when a B2B payment to your business fails.
+Merchant Payment Events
+merchant.payment_received
+Sent when your business receives a payment from a customer.
+{
+"id" : "AE_ijzo7oGgrlM8" ,
+"type" : "merchant.payment_received" ,
+"data" : {
+"id" : "T_46HS5COOWE" ,
+"amount" : "990" ,
+"fee" : "10" ,
+"currency" : "XOF" ,
+"sender_mobile" : "+221761110001" ,
+"merchant_name" : "Your Business" ,
+"custom_fields" : {
+"account_number" : "abc-123"
+},
+"when_created" : "2021-12-08T10:13:04Z"
+}
+}
+Test Events
+test.test_event
+Used for testing your webhook endpoint. You can trigger these manually from the Business Portal.
+Event Structure
+All webhook events follow the same structure:
+Field
+Type
+Description
+id
+string
+Unique identifier for this event
+type
+string
+The event type (e.g., "checkout.session.completed")
+data
+object
+Event-specific data containing transaction details
+Use Event IDs for Idempotency: The id field is unique for each event. Use it to detect and handle duplicate webhook deliveries.
+IP Whitelisting
+For enhanced security, we require whitelisting of all our public IP addresses.
+October 2026: New IP range: 87.192.0.0/19
+Wave webhooks will move to a new IP range, 87.192.0.0/19 . Please whitelist it in addition to the addresses below.
+You need to whitelist all the IPs in the list, otherwise some webhooks may be randomly rejected.
+87.192.0.0/19 (new)
+104.155.43.220/32
+34.140.23.175/32
+34.22.138.147/32
+34.76.157.22/32
+34.78.253.137/32
+34.79.119.200/32
+35.189.207.30/32
+35.195.255.192/32
+35.205.122.113/32
+35.205.190.121/32
+35.233.61.130/32
+35.240.61.196/32
+35.240.75.65/32
+35.241.190.127/32
+35.241.219.1/32
+Secret Rotation
+It is a security best practice to occasionally rotate webhook secrets. In situations where your webhook secret has been exposed, you should always immediately rotate the secret. Wave may also prompt you to rotate the secrets if the webhook is too old, as shown in the following screenshot.
+Rotating a secret requires recreating a webhook to obtain a new secret and then removing the old webhook. The simplest way to do this is using the duplicate option from the webhook list.
+After confirming the duplication, you will be shown the secret of this new webhook. In the list of webhooks you should now see two webhooks with the same URL, secret strategy and event subscription. Their only difference will be the creation date.
+While these two webhooks are configured at the same time, your system will receive two notifications per event, one secured with the old secret and one with the new one.
+Until you exchange these secrets in your system, the notifications related to the new webhook will be rejected by the validation logic. After changing the old secret for the new one, then the notifications related to the old secret will start being rejected by the validation, while the new ones will be now accepted.
+After changing the secret and ensuring you are accepting requests with the new webhook secret, you can remove the old secret by using the delete option from the webhook list.
+Step by step secret rotation
+Log into the business portal
+Go to Developers -> Webhooks
+On the list of webhooks, identify the one you want to rotate can select the option Duplicate from the three dots menu on the right
+Confirm the webhook duplication
+From this point on, your system will receive two webhook notifications per event
+Copy the new webhook secret
+On your system, exchange the old webhook secret used for validation with the new one
+Send a test event from the new webhook and confirm on your server that you can receive and validate its header correctly
+Delete the old webhook by selecting the option Delete from the three dots menu on the right
+Rotation is completed, your system will receive again only one webhook notification per event

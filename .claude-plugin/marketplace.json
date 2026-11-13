@@ -1,0 +1,15 @@
+{
+  "name": "mobile-money-audit",
+  "description": "Mobile money payment integration audit for Laravel apps",
+  "owner": {
+    "name": "youkc",
+    "url": "https://github.com/youkc"
+  },
+  "plugins": [
+    {
+      "name": "mobile-money-audit",
+      "source": "./",
+      "description": "Read-only pre-production audit of mobile money payment integrations (Bictorys, Wave, PayTech, PayDunya) in Laravel apps, with a GO / NO-GO verdict."
+    }
+  ]
+}
