@@ -1,96 +1,58 @@
 # mobile-money-audit
 
-[English](#english) | [Français](#français)
-
-## English
-
-An AI agent skill that audits, **read-only**, the mobile money payment code of a **Laravel** app before it goes to production, and returns a **GO / NO-GO** verdict with precise `file:line` fixes.
-
-Built for apps that take payments in West Africa (XOF), where generic Laravel audits do not know the providers.
-
-### What it checks
-
-- Webhook / IPN authenticity (provider signature or secret, constant-time comparison with `hash_equals`, or server-side status check)
-- Idempotency: the same notification twice credits once (unique constraint, lock or transaction)
-- Amount and currency recomputed server-side and compared to the order, never read from the client
-- XOF amounts are integers (no float, no `* 100` inherited from Stripe)
-- Pending payments resolved later by a scheduled status check
-- The success / return page never validates a payment
-- Test vs live keys and sandbox vs production URLs; no ngrok / localhost in production
-- Secrets in `.env`, not in code or git history; masked in the report
-- Webhook route excluded from CSRF, and only that route
-- HTTPS everywhere, TLS verification not disabled
-- No secrets in logs; timeouts and API errors handled
-
-Provider references (facts taken from each provider's official docs, with sources and a "Verified on" date): **Bictorys, Wave, PayTech, PayDunya**. For any other provider, the common checks run and the report lists what to verify in that provider's docs. Orange Money direct integration is not covered: its technical documentation is not public.
-
-The skill never modifies your project, never calls a provider API, and never prints a secret in clear.
-
-### Install
-
-As a Claude Code plugin:
-
-```bash
-claude plugin marketplace add youkc/mobile-money-audit
-```
-
-```bash
-claude plugin install mobile-money-audit@mobile-money-audit
-```
-
-Or as a plain skill for Claude Code, Cursor, Codex and other agents, with the open [skills](https://github.com/vercel-labs/skills) CLI:
-
-```bash
-npx skills add youkc/mobile-money-audit
-```
-
-### Use
-
-In your Laravel project, ask your agent: "Audit my mobile money integration before production". The report starts with the verdict, for example `NO-GO - 2 blockers`, then lists findings as `[Blocker | Important | Minor] problem -> fix (file:line)`, then what to confirm manually (dashboard settings, webhook registered in live mode, scheduler running, etc.). It answers in the language you write in.
-
-### Documentation watch
-
-Provider details change. A weekly GitHub Actions workflow (`.github/workflows/doc-watch.yml`) downloads the pages listed in `watch/docs.json` with plain `curl`, extracts the text, compares it with the snapshot in `watch/state/`, and when something changed opens an issue with the diff and mentions the repository owner. No AI, no automatic change to the references: a human reads the diff and updates the reference file and its "Verified on" date. The skill itself warns when a reference is more than 6 months old.
-
-Run the watch tests locally: `python3 watch/test_check.py`.
-
-### Limits
-
-Static review only: it cannot see your provider dashboard, your production server or real traffic. A GO is not a security certification. Provider docs are sometimes incomplete or inconsistent; when a fact is not documented, the reference says "not documented - to confirm" instead of guessing.
-
-### Contributing
-
-Corrections to the references are welcome, with the official URL that supports them. New provider references must follow the same format (sources, "Verified on" date, no undocumented facts).
-
-License: MIT.
+[Français](#français) | [English](#english)
 
 ## Français
 
-Un skill pour agent IA qui audite, **en lecture seule**, le code de paiement mobile money d'une app **Laravel** avant la mise en production, et rend un verdict **GO / NO-GO** avec des corrections précises `fichier:ligne`.
+Je développe des apps Laravel et Flutter à Dakar. Quand j'ai intégré mes premiers paiements mobile money, j'ai cherché un outil pour relire mon code avant la mise en ligne. Il existe de bons audits Laravel, mais aucun ne connaît Wave, PayTech, Bictorys ou PayDunya, ni les pièges propres au XOF. J'ai donc écrit ce skill.
 
-Pensé pour les apps qui encaissent en Afrique de l'Ouest (XOF), là où les audits Laravel génériques ne connaissent pas les prestataires.
+Vous le lancez depuis votre agent IA (Claude Code, Cursor, Codex...) dans votre projet Laravel. Il lit le code qui gère vos paiements, ne modifie rien, et vous dit si vous pouvez passer en prod.
 
-### Ce qui est vérifié
+### À quoi ressemble le résultat
 
-- Authenticité du webhook / IPN (signature ou secret du prestataire, comparaison en temps constant avec `hash_equals`, ou contre-vérification via l'API de statut)
-- Idempotence : la même notification reçue deux fois crédite une seule fois (contrainte unique, verrou ou transaction)
-- Montant et devise recalculés côté serveur et comparés à la commande, jamais lus depuis le client
-- Montants XOF entiers (pas de float, pas de `* 100` hérité de Stripe)
-- Paiements « en attente » résolus plus tard par une vérification planifiée du statut
-- La page de succès / retour ne valide jamais un paiement
-- Clés test vs live et URL sandbox vs prod ; pas de ngrok / localhost en prod
-- Secrets dans `.env`, pas dans le code ni dans l'historique git ; masqués dans le rapport
-- Route webhook exclue du CSRF, et seulement elle
-- HTTPS partout, vérification TLS non désactivée
-- Pas de secrets dans les logs ; timeouts et erreurs d'API gérés
+```
+NO-GO — 2 bloquants
 
-Fiches prestataires (faits tirés de la doc officielle de chaque prestataire, avec sources et date « Verified on ») : **Bictorys, Wave, PayTech, PayDunya**. Pour un autre prestataire, les vérifications communes s'appliquent et le rapport liste ce qu'il faut vérifier dans sa doc. L'intégration directe Orange Money n'est pas couverte : sa documentation technique n'est pas publique.
+1. [Bloquant] Le webhook Wave est traité sans vérifier la signature Wave-Signature.
+   N'importe qui peut envoyer une fausse notification de paiement.
+   -> Vérifier le HMAC-SHA256 sur le corps brut avec hash_equals, refuser au-delà de 5 min.
+   (app/Http/Controllers/WaveWebhookController.php:18)
 
-Le skill ne modifie jamais votre projet, n'appelle jamais l'API d'un prestataire et n'affiche jamais un secret en clair.
+2. [Bloquant] La page de succès marque la commande comme payée.
+   -> Ne faire qu'afficher le statut ; seul le webhook ou l'API de statut valide.
+   (app/Http/Controllers/PaymentController.php:74)
+
+3. [Important] Aucune tâche planifiée ne relance les paiements restés « en attente ».
+   ...
+
+À confirmer manuellement
+- Le webhook est bien enregistré en mode live dans le tableau de bord.
+- ...
+```
+
+(Exemple fictif, pour montrer le format.)
+
+### Ce qu'il cherche
+
+Les erreurs qui coûtent vraiment de l'argent, en premier :
+
+- **Les fausses notifications.** Si votre webhook ou votre IPN ne vérifie pas la signature ou le secret du prestataire, quelqu'un peut appeler cette URL et faire passer une commande pour payée.
+- **Les doublons.** Les prestataires renvoient parfois la même notification plusieurs fois. Sans contrainte unique ou verrou en base, le client est crédité deux fois.
+- **Le montant venu du client.** Le prix doit être recalculé côté serveur et comparé à ce qui a été payé. Un champ caché dans un formulaire ne suffit pas.
+- **La page de succès qui valide le paiement.** Elle n'est qu'une redirection : n'importe qui peut l'ouvrir.
+- **Le `* 100` hérité de Stripe.** Le XOF n'a pas de centimes. 5000 F se transmettent 5000, et on évite les float.
+
+Et tout ce qu'on oublie la veille d'un lancement : les paiements en attente qu'aucune tâche ne relance, les clés de test ou une URL ngrok restées en prod, un secret commité dans git, la route webhook bloquée par le CSRF (ou au contraire tout le site exclu du CSRF), la vérification SSL désactivée, des clés dans les logs, des appels API sans timeout.
+
+Pour Bictorys, Wave, PayTech et PayDunya, le skill s'appuie sur une fiche par prestataire : nom de l'en-tête de signature, algorithme, statuts, URL de sandbox et de prod. Chaque information vient de la documentation officielle, avec le lien et la date de vérification. Quand la doc ne dit rien, la fiche l'écrit plutôt que de deviner.
+
+Pour un autre prestataire, les vérifications générales s'appliquent quand même, et le rapport vous dit quoi aller vérifier dans sa doc. Orange Money en intégration directe n'est pas couvert, faute de documentation technique publique.
+
+Le skill ne touche jamais à vos fichiers, n'appelle aucune API de paiement, et quand il trouve une clé il donne seulement l'endroit et un début masqué (`9f3a****`).
 
 ### Installation
 
-Comme plugin Claude Code :
+Avec Claude Code :
 
 ```bash
 claude plugin marketplace add youkc/mobile-money-audit
@@ -100,28 +62,114 @@ claude plugin marketplace add youkc/mobile-money-audit
 claude plugin install mobile-money-audit@mobile-money-audit
 ```
 
-Ou comme skill simple pour Claude Code, Cursor, Codex et d'autres agents, avec la CLI ouverte [skills](https://github.com/vercel-labs/skills) :
+Avec un autre agent (Cursor, Codex...), via la CLI [skills](https://github.com/vercel-labs/skills) :
 
 ```bash
 npx skills add youkc/mobile-money-audit
 ```
 
-### Utilisation
+Ensuite, dans votre projet : « Audite mon intégration mobile money avant la prod ». Il répond dans la langue de votre question.
 
-Dans votre projet Laravel, demandez à votre agent : « Audite mon intégration mobile money avant la prod ». Le rapport commence par le verdict, par exemple `NO-GO — 2 bloquants`, puis liste les points sous la forme `[Bloquant | Important | Mineur] problème -> correction (fichier:ligne)`, puis ce qu'il faut confirmer à la main (réglages du tableau de bord, webhook enregistré en mode live, planificateur actif, etc.). Il répond dans votre langue.
+### Garder les fiches à jour
 
-### Veille des documentations
+Les prestataires changent leur doc sans prévenir, et une fiche périmée donne une fausse impression de sécurité. Chaque lundi, une GitHub Action télécharge les pages de doc listées dans `watch/docs.json`, compare leur texte avec la version précédente et ouvre une issue s'il y a une différence. Je relis alors le changement et je mets la fiche à jour à la main. Il n'y a pas d'IA dans cette boucle.
 
-Les détails des prestataires changent. Un workflow GitHub Actions hebdomadaire (`.github/workflows/doc-watch.yml`) télécharge les pages listées dans `watch/docs.json` avec un simple `curl`, extrait le texte, le compare à l'instantané de `watch/state/`, et s'il y a un changement ouvre une issue avec le diff en mentionnant le propriétaire du dépôt. Pas d'IA, pas de modification automatique des fiches : un humain lit le diff et met à jour la fiche et sa date « Verified on ». Le skill signale lui-même une fiche vérifiée il y a plus de 6 mois.
+De son côté, le skill vous prévient si la fiche qu'il utilise a plus de six mois.
 
-Lancer les tests de la veille en local : `python3 watch/test_check.py`.
+Les tests du script de veille : `python3 watch/test_check.py`.
 
-### Limites
+### Ce qu'il ne fait pas
 
-Revue statique uniquement : elle ne voit ni votre tableau de bord prestataire, ni votre serveur de prod, ni le trafic réel. Un GO n'est pas une certification de sécurité. Les docs des prestataires sont parfois incomplètes ou contradictoires ; quand un point n'est pas documenté, la fiche écrit « not documented - to confirm » au lieu de deviner.
+C'est une relecture du code. Il ne voit ni votre tableau de bord chez le prestataire, ni votre serveur, ni le trafic réel. Un GO veut dire qu'il n'a pas trouvé de problème dans le code, pas que votre application est certifiée sûre.
 
 ### Contribuer
 
-Les corrections des fiches sont bienvenues, avec l'URL officielle qui les justifie. Toute nouvelle fiche suit le même format (sources, date « Verified on », aucun fait non documenté).
+Vous avez repéré une erreur dans une fiche, ou vous voulez ajouter un prestataire ? Ouvrez une issue ou une pull request avec le lien vers la doc officielle qui justifie le changement. Une information sans source ne sera pas intégrée.
 
-Licence : MIT.
+Licence MIT.
+
+## English
+
+I build Laravel and Flutter apps in Dakar. When I wired up my first mobile money payments, I looked for something to review that code before going live. There are good Laravel audits out there, but none of them know Wave, PayTech, Bictorys or PayDunya, or the traps that come with XOF. So I wrote this skill.
+
+You run it from your AI agent (Claude Code, Cursor, Codex...) inside your Laravel project. It reads the code that handles your payments, changes nothing, and tells you whether you're ready for production.
+
+### What you get
+
+```
+NO-GO - 2 blockers
+
+1. [Blocker] The Wave webhook is processed without checking the Wave-Signature header.
+   Anyone can send a fake payment notification.
+   -> Verify the HMAC-SHA256 of the raw body with hash_equals, reject anything older than 5 min.
+   (app/Http/Controllers/WaveWebhookController.php:18)
+
+2. [Blocker] The success page marks the order as paid.
+   -> Only display the status; only the webhook or the status API may validate.
+   (app/Http/Controllers/PaymentController.php:74)
+
+3. [Important] No scheduled task re-checks payments stuck in "pending".
+   ...
+
+To confirm manually
+- The webhook is registered in live mode in the provider dashboard.
+- ...
+```
+
+(Made-up example, to show the format.)
+
+### What it looks for
+
+The mistakes that actually lose money come first:
+
+- **Fake notifications.** If your webhook or IPN doesn't check the provider's signature or secret, anyone can call that URL and mark an order as paid.
+- **Duplicates.** Providers sometimes send the same notification more than once. Without a unique constraint or a lock, the customer gets credited twice.
+- **Amounts coming from the client.** The price has to be computed on the server and compared with what was actually paid. A hidden form field won't do.
+- **A success page that validates the payment.** It's just a redirect, and anyone can open it.
+- **The `* 100` copied from Stripe code.** XOF has no cents: 5000 F is sent as 5000, and floats stay out of it.
+
+Then everything that slips through the night before launch: pending payments nothing ever re-checks, test keys or an ngrok URL left in production, a secret committed to git, a webhook route blocked by CSRF (or the whole site excluded from it), SSL verification turned off, keys in the logs, API calls with no timeout.
+
+For Bictorys, Wave, PayTech and PayDunya, the skill relies on one reference file per provider: signature header, algorithm, status names, sandbox and production URLs. Every fact comes from the official documentation, with the link and the date it was checked. When the docs are silent, the file says so instead of guessing.
+
+For any other provider, the general checks still run, and the report tells you what to look up in that provider's docs. Direct Orange Money integration isn't covered, as its technical documentation isn't public.
+
+The skill never touches your files, never calls a payment API, and when it finds a key it only shows where it is and a masked prefix (`9f3a****`).
+
+### Install
+
+With Claude Code:
+
+```bash
+claude plugin marketplace add youkc/mobile-money-audit
+```
+
+```bash
+claude plugin install mobile-money-audit@mobile-money-audit
+```
+
+With another agent (Cursor, Codex...), through the [skills](https://github.com/vercel-labs/skills) CLI:
+
+```bash
+npx skills add youkc/mobile-money-audit
+```
+
+Then, in your project: "Audit my mobile money integration before production". It answers in the language you ask in.
+
+### Keeping the references current
+
+Providers change their docs without notice, and an outdated reference gives a false sense of safety. Every Monday, a GitHub Action downloads the doc pages listed in `watch/docs.json`, compares their text with the previous version, and opens an issue if anything changed. I then read the change and update the reference by hand. There's no AI in that loop.
+
+On its side, the skill warns you when the reference it uses is more than six months old.
+
+Tests for the watch script: `python3 watch/test_check.py`.
+
+### What it doesn't do
+
+It's a code review. It can't see your provider dashboard, your server or real traffic. A GO means it found no problem in the code, not that your app is certified secure.
+
+### Contributing
+
+Found a mistake in a reference, or want to add a provider? Open an issue or a pull request with a link to the official docs that back the change. Facts without a source won't be merged.
+
+MIT license.
