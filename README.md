@@ -4,9 +4,9 @@
 
 ## Français
 
-Je développe des apps Laravel et Flutter à Dakar. Quand j'ai intégré mes premiers paiements mobile money, j'ai cherché un outil pour relire mon code avant la mise en ligne. Il existe de bons audits Laravel, mais aucun ne connaît Wave, PayTech, Bictorys ou PayDunya, ni les pièges propres au XOF. J'ai donc écrit ce skill.
+Je développe des apps PHP (Laravel et PHP natif) et Flutter à Dakar. Quand j'ai intégré mes premiers paiements mobile money, j'ai cherché un outil pour relire mon code avant la mise en ligne. Il existe de bons audits PHP et Laravel, mais aucun ne connaît Wave, PayTech, Bictorys ou PayDunya, ni les pièges propres au XOF. J'ai donc écrit ce skill.
 
-Vous le lancez depuis votre agent IA (Claude Code, Cursor, Codex...) dans votre projet Laravel. Il lit le code qui gère vos paiements, ne modifie rien, et vous dit si vous pouvez passer en prod.
+Vous le lancez depuis votre agent IA (Claude Code, Cursor, Codex...) dans votre projet. Il fonctionne avec Laravel comme avec du PHP natif (routeur maison, `curl`, scripts cron, fichiers SQL). Il lit le code qui gère vos paiements, ne modifie rien, et vous dit si vous pouvez passer en prod.
 
 ### À quoi ressemble le résultat
 
@@ -41,8 +41,9 @@ Les erreurs qui coûtent vraiment de l'argent, en premier :
 - **Le montant venu du client.** Le prix doit être recalculé côté serveur et comparé à ce qui a été payé. Un champ caché dans un formulaire ne suffit pas.
 - **La page de succès qui valide le paiement.** Elle n'est qu'une redirection : n'importe qui peut l'ouvrir.
 - **Le `* 100` hérité de Stripe.** Le XOF n'a pas de centimes. 5000 F se transmettent 5000, et on évite les float.
+- **Le webhook perdu.** Si personne ne revérifie les paiements restés en attente, un client qui a payé peut ne jamais recevoir ce qu'il a acheté.
 
-Et tout ce qu'on oublie la veille d'un lancement : les paiements en attente qu'aucune tâche ne relance, les clés de test ou une URL ngrok restées en prod, un secret commité dans git, la route webhook bloquée par le CSRF (ou au contraire tout le site exclu du CSRF), la vérification SSL désactivée, des clés dans les logs, des appels API sans timeout.
+Et tout ce qu'on oublie la veille d'un lancement : les clés de test ou une URL ngrok restées en prod, un secret commité dans git, la route webhook bloquée par le CSRF (ou au contraire tout le site exclu du CSRF), la vérification SSL désactivée, des clés dans les logs, des appels API sans timeout.
 
 Pour Bictorys, Wave, PayTech et PayDunya, le skill s'appuie sur une fiche par prestataire : nom de l'en-tête de signature, algorithme, statuts, URL de sandbox et de prod. Chaque information vient de la documentation officielle, avec le lien et la date de vérification. Quand la doc ne dit rien, la fiche l'écrit plutôt que de deviner.
 
@@ -90,9 +91,9 @@ Licence MIT.
 
 ## English
 
-I build Laravel and Flutter apps in Dakar. When I wired up my first mobile money payments, I looked for something to review that code before going live. There are good Laravel audits out there, but none of them know Wave, PayTech, Bictorys or PayDunya, or the traps that come with XOF. So I wrote this skill.
+I build PHP (Laravel and plain PHP) and Flutter apps in Dakar. When I wired up my first mobile money payments, I looked for something to review that code before going live. There are good PHP and Laravel audits out there, but none of them know Wave, PayTech, Bictorys or PayDunya, or the traps that come with XOF. So I wrote this skill.
 
-You run it from your AI agent (Claude Code, Cursor, Codex...) inside your Laravel project. It reads the code that handles your payments, changes nothing, and tells you whether you're ready for production.
+You run it from your AI agent (Claude Code, Cursor, Codex...) inside your project. It works with Laravel and with plain PHP (custom router, `curl`, cron scripts, SQL files). It reads the code that handles your payments, changes nothing, and tells you whether you're ready for production.
 
 ### What you get
 
@@ -127,8 +128,9 @@ The mistakes that actually lose money come first:
 - **Amounts coming from the client.** The price has to be computed on the server and compared with what was actually paid. A hidden form field won't do.
 - **A success page that validates the payment.** It's just a redirect, and anyone can open it.
 - **The `* 100` copied from Stripe code.** XOF has no cents: 5000 F is sent as 5000, and floats stay out of it.
+- **The lost webhook.** If nothing re-checks payments stuck in pending, a customer who paid may never get what they bought.
 
-Then everything that slips through the night before launch: pending payments nothing ever re-checks, test keys or an ngrok URL left in production, a secret committed to git, a webhook route blocked by CSRF (or the whole site excluded from it), SSL verification turned off, keys in the logs, API calls with no timeout.
+Then everything that slips through the night before launch: test keys or an ngrok URL left in production, a secret committed to git, a webhook route blocked by CSRF (or the whole site excluded from it), SSL verification turned off, keys in the logs, API calls with no timeout.
 
 For Bictorys, Wave, PayTech and PayDunya, the skill relies on one reference file per provider: signature header, algorithm, status names, sandbox and production URLs. Every fact comes from the official documentation, with the link and the date it was checked. When the docs are silent, the file says so instead of guessing.
 

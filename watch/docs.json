@@ -8,7 +8,8 @@
     {"id": "bictorys-statuses", "url": "https://docs.bictorys.com/docs/status-responses-and-their-meanings.md"},
     {"id": "bictorys-test-mobile-money", "url": "https://docs.bictorys.com/docs/test-mobile-money.md"},
     {"id": "bictorys-api-create-charge", "url": "https://docs.bictorys.com/reference/createcharge.md"},
-    {"id": "bictorys-api-transaction-details", "url": "https://docs.bictorys.com/reference/gettransactiondetails.md"}
+    {"id": "bictorys-api-transaction-details", "url": "https://docs.bictorys.com/reference/gettransactiondetails.md"},
+    {"id": "bictorys-api-transactions-search", "url": "https://docs.bictorys.com/reference/gettransactions.md"}
   ],
   "wave": [
     {"id": "wave-webhook", "url": "https://docs.wave.com/webhook"},

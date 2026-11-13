@@ -1,19 +1,25 @@
 ---
 name: mobile-money-audit
-description: Read-only pre-production audit of the mobile money payment integration in a Laravel app (Bictorys, Wave, PayTech, PayDunya, or any other provider). Checks webhook/IPN authentication, idempotency, server-side amount checks, XOF integer amounts, pending-payment resolution, test vs live configuration, secrets, CSRF, HTTPS, logs and API error handling, then returns a GO / NO-GO verdict with file:line fixes. Use when the user asks to audit, review or check a mobile money / Wave / Orange Money / PayTech / PayDunya / Bictorys payment integration, or asks whether their payment code is ready for production.
+description: Read-only pre-production audit of the mobile money payment integration in a PHP app, Laravel or plain PHP (Bictorys, Wave, PayTech, PayDunya, or any other provider). Checks webhook/IPN authentication, idempotency, server-side amount checks, XOF integer amounts, pending-payment resolution, test vs live configuration, secrets, CSRF, HTTPS, logs and API error handling, then returns a GO / NO-GO verdict with file:line fixes. Use when the user asks to audit, review or check a mobile money / Wave / Orange Money / PayTech / PayDunya / Bictorys payment integration, or asks whether their payment code is ready for production.
 ---
 
-# Mobile money integration audit (Laravel)
+# Mobile money integration audit (PHP: Laravel or plain PHP)
 
-You audit the code that takes mobile money payments in a Laravel application and decide whether it can go to production. The audit is **read-only**.
+You audit the code that takes mobile money payments in a PHP application (Laravel or plain PHP) and decide whether it can go to production. The audit is **read-only**.
 
 ## Hard rules
 
 1. **Never modify the audited project.** No edits, no new files, no `composer`/`npm` install, no migrations, no `artisan` commands that write (cache, migrate, queue, key:generate...). Reading files and running read-only commands (`grep`, `cat`, `git log`, `php artisan route:list` if it already works) is fine. Proposed fixes go in the report, not in the code.
 2. **Never print a secret in clear.** When you find a key, token, password or webhook secret, report its location and a masked value: first 4 characters, then `****`, then the length. Example: `.env:12 PAYTECH_API_SECRET = 9f3a**** (64 chars)`. This also applies to values found in `.env`, logs, tests, seeders and git history.
+   Masking must happen **before** the output reaches you: never `cat`, `grep` or read a file that may hold secrets (`.env*`, `config/*.php`, `env.php`, logs) without piping it through a mask, because tool output is shown to the user. Portable filter (macOS and Linux sed), keeps the key name and the first 4 characters of the value:
+   `grep -n -i 'KEY\|SECRET\|TOKEN\|PASSWORD' .env | sed -E -e "s/(['\"])([^'\"]{4})[^'\"]{4,}(['\"])([^'\"]*)\$/\1\2****\3\4/" -e "s/=([^'\" ]{4})[^ ]{4,}\$/=\1****/"`
+   If you are unsure a command masks correctly, check only for presence (`grep -c NAME file`) instead.
 3. **Never call a payment provider API**, even sandbox, and never send a test webhook. The audit is static.
 4. **Answer in the user's language** (the language of their request). The report labels below are given in English; translate them (for French: `Bloquant`, `Important`, `Mineur`, `A confirmer manuellement`).
 5. **Do not invent provider details.** Provider-specific facts come only from the provider reference file. If a fact you need is missing there, say so and put it under "To confirm manually".
+6. **Check before you accuse.** Before reporting that the code contradicts the provider docs, check which endpoint or payload the code actually reads: providers sometimes define the same field differently in the webhook and in the API (for example `amount` gross vs net). Read the code's own comments and tests too; if they encode an observed behavior, report a "to confirm" instead of a defect.
+
+**Plain PHP projects (no Laravel):** run the same checks. Translate the Laravel-specific ones to what the project uses: its own router and CSRF check instead of `VerifyCsrfToken`, raw `curl_*` instead of `Http::`, its config file instead of `.env`, cron scripts instead of the Laravel scheduler, SQL schema files instead of migrations. Say in the report that the project is not Laravel.
 
 ## Step 1 - Detect the provider(s)
 
@@ -66,6 +72,7 @@ The same notification received twice (or a notification plus a status poll, or t
 - A state transition guarded atomically: `DB::transaction` + `lockForUpdate()`, or a conditional update (`where('status', 'pending')->update([...])` and check the affected row count), or `Cache::lock`.
 - "Check status then update" without a lock or transaction = race condition, Important at least; Blocker if it triggers a credit, wallet top-up, delivery or e-mail with value.
 - Side effects (credit balance, send goods, dispatch jobs) happen only on the actual transition to paid.
+- A first failed attempt followed by a successful one must still credit: if the code marks the order `failed` on a failure notification, the later success must be able to move it from `failed` to paid (Important if it only accepts `pending`).
 
 ### 3.3 Amount and currency - Blocker if wrong
 - Amount and currency sent to the provider are computed **server-side** from the order (DB prices), never taken from the request (`$request->amount`, hidden form field, mobile app payload).

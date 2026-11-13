@@ -1,0 +1,607 @@
+---
+agentTools:
+projectIndex: https://docs.bictorys.com/llms.txt
+---
+# Returns list of transactions
+Use this endpoint to retrieve the list of checkout, payout and refund transactions. Transactions can be
+filtered using date, customer Id or phone number
+# OpenAPI definition
+```json
+{
+"openapi": "3.0.3",
+"info": {
+"title": "Pay",
+"description": "Bictorys Charges API allows to trigger payment on credit card, debit card, mobile money and tokenize card.",
+"version": "1.0.0",
+"x-bictorys-api-type": "public",
+"x-bictorys-api-product": "payment"
+},
+"servers": [
+{
+"url": "https://api.test.bictorys.com/pay/v1",
+"description": "Test Environment"
+}
+],
+"security": [
+{
+"ApiKeyAuth": []
+}
+],
+"tags": [
+{
+"name": "Transaction",
+"description": "API endpoints to retrieve transactions"
+}
+],
+"paths": {
+"/transactions": {
+"get": {
+"tags": [
+"Transaction"
+],
+"summary": "Returns list of transactions",
+"description": "Use this endpoint to retrieve the list of checkout, payout and refund transactions. Transactions can be\nfiltered using date, customer Id or phone number\n",
+"operationId": "getTransactions",
+"parameters": [
+{
+"name": "start_date",
+"in": "query",
+"description": "Optional. Query transactions starting from this date, if not provided, 2023-09-01T00:00:00+00 is used.\nThe date format is ISO 8601 (YYYY-mm-dd HH:mm:ss,SSSS). The timezone is UTC and precision is in seconds\n",
+"schema": {
+"type": "string",
+"format": "date-time",
+"example": "2023-05-22T00:00:00+00"
+}
+},
+{
+"name": "end_date",
+"in": "query",
+"description": "Query transactions from start_date until this date time, if omitted, current date-time is used. The date format is ISO 8601 (YYYY-mm-dd HH:mm:ss,SSSS).\nThe timezone is UTC and precision is in seconds.\nIf this filter is set, filters customer_id and phone are ignored\n",
+"schema": {
+"type": "string",
+"format": "date-time",
+"example": "2023-05-22T11:53:14+00"
+}
+},
+{
+"name": "type",
+"in": "query",
+"description": "type of transaction to retrieve. If not provided, all transactions are returned\n",
+"schema": {
+"type": "string",
+"enum": [
+"checkout",
+"payout",
+"refund"
+]
+},
+"example": "checkout"
+},
+{
+"name": "customer_id",
+"in": "query",
+"description": "Returns list of transaction for a given customer. If provided, query parameter type must be passed also\n",
+"schema": {
+"type": "string",
+"format": "uuid"
+},
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+{
+"name": "customer_phone",
+"in": "query",
+"description": "Returns list of transaction for a given phone number. If provided, query parameter type must be passed also\n",
+"schema": {
+"type": "string"
+},
+"example": "00221 771234567"
+},
+{
+"name": "device_id",
+"in": "query",
+"description": "Returns list of transaction for a given device or terminal. If provided, query parameter type must be passed also\n",
+"schema": {
+"type": "string"
+},
+"example": "sn-3caf63e6b79c"
+},
+{
+"name": "payment_reference",
+"in": "query",
+"description": "Returns list of transaction with this payment reference.\n",
+"schema": {
+"type": "string"
+},
+"example": "store1-massar"
+},
+{
+"name": "page_offset",
+"in": "query",
+"description": "pagination offset, default is 0.\n",
+"schema": {
+"type": "integer",
+"default": 0
+},
+"example": 1
+},
+{
+"name": "page_size",
+"in": "query",
+"description": "Page size. default value is 20\n",
+"schema": {
+"type": "integer",
+"default": 20
+},
+"example": 15
+},
+{
+"name": "X-Amzn-Trace-Id",
+"in": "header",
+"description": "The parameter Identifies this HTTP request across all services. It helps to diagnostic request errors. The parameter is added automatically by the API gateway\n",
+"schema": {
+"type": "string"
+},
+"required": false,
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+}
+],
+"responses": {
+"200": {
+"description": "List of transactions.",
+"content": {
+"application/json": {
+"schema": {
+"type": "array",
+"items": {
+"$ref": "#/components/schemas/TransactionObjectResponse"
+}
+}
+}
+}
+},
+"400": {
+"description": "Bad Request",
+"content": {
+"application/problem+json": {
+"schema": {
+"$ref": "#/components/schemas/BadRequestError"
+}
+}
+}
+},
+"401": {
+"description": "The caller is unauthenticated"
+},
+"403": {
+"description": "Access rights not sufficient"
+},
+"404": {
+"description": "Card not found"
+},
+"500": {
+"description": "Internal Server Error.",
+"content": {
+"application/problem+json": {
+"schema": {
+"$ref": "#/components/schemas/InternalServerError"
+}
+}
+}
+}
+}
+}
+}
+},
+"components": {
+"schemas": {
+"TransactionObjectResponse": {
+"type": "object",
+"properties": {
+"id": {
+"description": "Unique identifier of the transaction",
+"type": "string",
+"format": "uuid",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"merchantId": {
+"description": "Unique Merchant Identifier",
+"type": "string",
+"format": "uuid",
+"example": "d2d2053b-638d-4133-957e-3caf63e6b79c"
+},
+"type": {
+"description": "type of transaction",
+"$ref": "#/components/schemas/TransactionType",
+"example": "payment"
+},
+"customerId": {
+"description": "Identifier of the customer who paid the transaction",
+"type": "string",
+"format": "uuid",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"customerObject": {
+"description": "customer details",
+"$ref": "#/components/schemas/CustomerObject"
+},
+"pspName": {
+"description": "The PSP, mobile money or card, used for this transaction",
+"type": "string",
+"enum": [
+"wave_money",
+"orange_money",
+"maxit",
+"mtn_money",
+"free_money",
+"moov",
+"mobicash",
+"togocell",
+"bictorys",
+"card"
+],
+"example": "card"
+},
+"paymentMeans": {
+"description": "means of transaction",
+"type": "string",
+"example": "+221 *** ** 09"
+},
+"paymentChannel": {
+"description": "Channel used to make the payment",
+"type": "string",
+"enum": [
+"Terminal",
+"Online"
+],
+"example": "Terminal"
+},
+"amount": {
+"description": "This is the amount received or paid by the merchant, net of fees.",
+"type": "number",
+"format": "double",
+"example": 100
+},
+"merchantFees": {
+"description": "The fee paid by the merchant for receiving the payment.",
+"type": "number",
+"format": "double",
+"example": 25
+},
+"customerFees": {
+"description": "The fee paid by the customer for receiving the payment.",
+"type": "number",
+"format": "double",
+"example": 0
+},
+"transactionFeeAmountHT": {
+"description": "Transaction fee amount without tax.",
+"type": "number",
+"format": "double",
+"example": 25
+},
+"transactionFeeAmountTax": {
+"description": "Transaction fee tax. The value is zero if tax is not applicable",
+"type": "number",
+"format": "double",
+"example": 0
+},
+"currency": {
+"description": "The currency associated to the amount. If you don't specify a value, we'll assume 'XOF'",
+"type": "string",
+"example": "XOF"
+},
+"paymentReference": {
+"description": "payment Reference",
+"type": "string",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"merchantReference": {
+"description": "reference passed by client in the request",
+"type": "string",
+"example": "33e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"orderType": {
+"$ref": "#/components/schemas/OrderType",
+"example": "invoice"
+},
+"orderId": {
+"type": "string",
+"description": "unique Id of the order. invoiceId, orderId or paymentlinkId. This value is empty if orderType equals to flat",
+"example": "14e1c83b-7cb0-437b-bc50-a7a58e5660ad"
+},
+"status": {
+"description": "status of the transaction",
+"$ref": "#/components/schemas/PaymentStatus",
+"example": "succeeded"
+},
+"deviceId": {
+"description": "The identifier of the device used to make the payment",
+"type": "string",
+"example": "SN-4562345"
+},
+"originIp": {
+"description": "IP address of the device that have sent the request",
+"type": "string",
+"example": "192.0.0.1"
+},
+"timestamp": {
+"description": "The time and date that the the transaction was recorded in our system. Note that this doesn't describe when payments were executed, only when they were submitted",
+"type": "string",
+"example": "2022-06-20T17:17:11Z"
+}
+},
+"required": [
+"pspName",
+"status",
+"timestamp"
+]
+},
+"OrderType": {
+"description": "Reference to the type of the payment, invoice, paymentlink, order, flat means the merchant did not create an order or an invoice or a paymentlink prior to call charges API.",
+"type": "string",
+"enum": [
+"flat",
+"order",
+"invoice",
+"paymentlink"
+],
+"example": "invoice"
+},
+"CustomerObject": {
+"type": "object",
+"properties": {
+"id": {
+"description": "unique uuid of the customer",
+"readOnly": true,
+"type": "string",
+"format": "uuid",
+"example": "fbd2053b-638d-4133-957e-3caf63e6b79c"
+},
+"name": {
+"description": "customer's full name",
+"type": "string",
+"example": "John Dao"
+},
+"phone": {
+"description": "customer's mobile phone number.",
+"type": "string",
+"example": 22505234567890
+},
+"email": {
+"description": "the email of the customer",
+"type": "string",
+"example": "john.dao@example.com"
+},
+"address": {
+"description": "Full street address, which MAY include house number, street name, Post Office Box, etc",
+"type": "string",
+"example": "23, avenue de la liberté"
+},
+"city": {
+"description": "City or locality component.",
+"type": "string",
+"example": "Dakar"
+},
+"postalCode": {
+"description": "Zip code or postal code component.",
+"type": "string",
+"example": 0
+},
+"country": {
+"description": "ISO3166-1 alpha-2 two letter, uppercase.",
+"type": "string",
+"example": "SN"
+},
+"locale": {
+"description": "User locale, language is lower case. Country in upper case",
+"type": "string",
+"default": "en-US",
+"example": "fr-FR"
+},
+"createdAt": {
+"description": "The date time that record was created in our system.",
+"type": "string",
+"readOnly": true,
+"example": "2022-06-20T17:17:11Z"
+},
+"updatedAt": {
+"description": "The date time that record was updated in our system.",
+"type": "string",
+"readOnly": true,
+"example": "2022-06-20T17:17:11Z"
+}
+},
+"required": [
+"country"
+]
+},
+"TransactionType": {
+"description": "type of transaction",
+"type": "string",
+"enum": [
+"payment",
+"transfer",
+"refund",
+"settlement"
+]
+},
+"PaymentStatus": {
+"description": "status of the transaction",
+"type": "string",
+"enum": [
+"succeeded",
+"failed",
+"cancelled",
+"pending",
+"processing",
+"reversed",
+"authorized"
+]
+},
+"BadRequestError": {
+"type": "object",
+"properties": {
+"status": {
+"description": "http status code",
+"type": "string",
+"example": 400
+},
+"title": {
+"type": "string",
+"example": "Bad request.",
+"default": "Bad request."
+},
+"details": {
+"description": "error details",
+"type": "string",
+"example": "E400-0 card info is missing",
+"enum": [
+"E400-21: representative object is missing",
+"E400-1: merchant name is missing",
+"E400-4: merchant country is missing",
+"E400-2: representative email is missing",
+"E400-1: representative name is missing",
+"E400-0: representative address is missing",
+"E400-0: Unexpected Error",
+"E400-6: Amount is missing",
+"E400-10: Invalid Country format",
+"E400-12: Currency is missing",
+"E400-13: PaymentType is missing",
+"E400-0: NotificationDict is missing",
+"E400-0: Notification value is missing",
+"E400-0: SettingDict is missing",
+"E400-0: Setting value is missing or not allowed",
+"E400-18: IBAN is missing",
+"E400-19: beneficiaryName is missing",
+"E400-0: Header media-type is missing",
+"E400-0: Header Content-Type is missing",
+"E400-22: Unsupported media type. Supported type are pdf, jpeg and png",
+"E400-23: Unsupported media type. use png",
+"E400-16: File size must not exceed 4ko",
+"E400-17: File size must not exceed 1Mo",
+"E400-0: password is missing",
+"E401-1: bearer token or apikey is missing",
+"E401-2: bearer token is missing",
+"E401-4: Cannot delete public key",
+"E400-0: apikey is missing",
+"E403-1: Access right not sufficient",
+"E400-0: Bad id is passed",
+"E400-7: Invalid Name Format",
+"E400-8: Invalid Email Format",
+"E400-9: Invalid phone number Format",
+"E400-3: phone number is required",
+"E400-20: Expired Or Bad OTP or Bad PhoneNumberId",
+"E400-20: Expired Or Bad OTP or Bad MerchantId",
+"E400-20: Expired Or Bad OTP",
+"E403-2: 2FA authentication is required",
+"E409-1 Merchant Representation has already an account",
+"E400-24: Selected Currency is not yet supported for this country",
+"E400-20: Resource is no longer available",
+"E400-25: Payment type is disabled by merchant",
+"E400-0: Bad transactionId is passed",
+"E400-0: Bad transaction type is passed",
+"E400-26: Invoice or Order is paid or expired",
+"E400-27: payment link is paid or expired",
+"E400-0: Missing or Bad search key",
+"E400-28: Money transfer is not authorized for this merchant",
+"E400-0 offline checkout write is missing",
+"E401-1: Invalid Token",
+"E401-3: Invalid apikey",
+"E400-0: type is missing in request body",
+"E400-0: bad or missing scope in request body",
+"E400-0: unknown apikeyId",
+"E400-0: account status is missing",
+"E400-0: merchantId is missing",
+"E400-0: callbackUrl is missing",
+"E400-0: bad type is passed",
+"E400-0: bad cardId is passed",
+"E400-0: bad merchant id is passed",
+"E400-0: unknown or unauthorized permission is passed",
+"E400-0 card info is missing",
+"E400-01: Order name is missing",
+"E400-0: Order id must be in UUID format",
+"E400-0: Same Idempotency is passed",
+"E400-29: product price is missing in a Item line Object",
+"E400-30: product quantity is missing in a Item line Object",
+"E400-31: Due date is required",
+"E400-1: Name is missing",
+"E400-32: Already expired",
+"E404-1: Cannot find resource",
+"E400-33: Wrong payment type or disabled",
+"E400-34: User does not have a secret Code",
+"E400-35: SecretCode is locked, you must reset it",
+"E400-36: Wrong secret code is passed",
+"E400-37: Secret code is missing",
+"E400-38: Insufficient balance",
+"E400-00: country is missing",
+"E400-39: Wrong country is passed",
+"E400-40: Invoice is expired",
+"E400-41: Wrong date format is used",
+"E400-42: Invalid Category format",
+"E400-43: Invalid City format",
+"E400-44:Merchant does not exist",
+"E400-45: Invalid Reference format",
+"E400-46: Invalid paymentReference format",
+"E400-47: Invoice is already paid",
+"E400-48: Payment link already paid",
+"E400-49: Error from PSP, Check your account",
+"E400-50: Amount exceed available capture",
+"E400-51: Wrong secret code is passed",
+"E400-52: You must register you phone number first",
+"E400-53: You don't have a secret code",
+"E400-54: You secret code is locked, do reset",
+"E400-55: Phone number must be in international format",
+"E400-0: redirectUrl must start with https://",
+"E400-0: Payment failed",
+"E401-5: Your Account is restricted",
+"E401-6: Your Account is not activated"
+]
+}
+}
+},
+"InternalServerError": {
+"type": "object",
+"properties": {
+"title": {
+"type": "string",
+"example": "An error has occurred.",
+"default": "An error has occurred."
+},
+"details": {
+"type": "string",
+"example": "An error has occurred.",
+"default": "An error has occurred."
+}
+}
+}
+},
+"securitySchemes": {
+"ApiKeyAuth": {
+"type": "apiKey",
+"in": "header",
+"name": "X-API-Key"
+}
+}
+},
+"x-readme": {
+"explorer-enabled": true,
+"proxy-enabled": true
+},
+"_id": {
+"buffer": {
+"0": 102,
+"1": 30,
+"2": 136,
+"3": 217,
+"4": 30,
+"5": 138,
+"6": 93,
+"7": 0,
+"8": 82,
+"9": 216,
+"10": 237,
+"11": 147
+}
+}
+}
+```
