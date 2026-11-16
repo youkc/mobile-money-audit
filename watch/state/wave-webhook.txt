@@ -35,6 +35,7 @@ Event Types
 Checkout Events
 B2B Events
 Merchant Payment Events
+Remittance Events
 Test Events
 Event Structure
 IP Whitelisting
@@ -1044,6 +1045,13 @@ Sent when your business receives a payment from a customer.
 "when_created" : "2021-12-08T10:13:04Z"
 }
 }
+Remittance Events
+Only available to remittance partners with access to the Remittance API.
+remittance.delivered
+Sent when the funds of a remittance reach the recipient.
+remittance.reversed
+Sent when Wave reverses a remittance and refunds the amount to your wallet.
+See the Remittance API documentation for when Wave sends each event and the payload.
 Test Events
 test.test_event
 Used for testing your webhook endpoint. You can trigger these manually from the Business Portal.
